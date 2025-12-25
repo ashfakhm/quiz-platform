@@ -279,7 +279,7 @@ export async function PUT(
 
     // Remove questions that are no longer in the quiz
     const oldQuestionIds = quiz.questionIds;
-    const questionsToRemove = oldQuestionIds.filter(id => !allQuestionIds.includes(id));
+    const questionsToRemove = oldQuestionIds.filter((id: string) => !allQuestionIds.includes(id));
 
     // Update quiz with sanitized data
     quiz.title = titleValidation.sanitized!;

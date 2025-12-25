@@ -2,13 +2,12 @@
 // SECURITY WARNING: Never expose user IDs in client-side code or public repositories
 // For production, use Clerk Organizations instead (see admin-server.ts)
 
-export const ADMIN_USER_IDS = [
-  // Add your Clerk user IDs here
+export const ADMIN_USER_IDS: string[] = [
+  // Add your Clerk user IDs here (development/testing only)
   // Example: 'user_2abc123...'
-  // Get your user ID from Clerk dashboard or from the user object
 ];
 
-export const ADMIN_EMAILS = [
+export const ADMIN_EMAILS: string[] = [
   // Add admin emails here
   // Example: 'admin@example.com'
   'muhammednawaf.buissness@gmail.com', // Temporary admin - migrate to Clerk Organizations

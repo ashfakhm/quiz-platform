@@ -94,7 +94,7 @@ export async function POST(
     const attempt = new Attempt({
       attemptId,
       userId,
-      quizId,
+      quizId: rawQuizId.trim(),
       quizTitle: quiz.title,
       mode,
       answers: answerDetails,

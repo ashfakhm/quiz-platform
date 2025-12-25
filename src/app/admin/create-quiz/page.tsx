@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useUser, useOrganization } from "@clerk/nextjs";
@@ -27,7 +28,7 @@ interface Question {
   };
 }
 
-export default function CreateQuizPage() {
+function CreateQuizPageInner() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { organization, isLoaded: orgLoaded } = useOrganization();
   const router = useRouter();
@@ -498,6 +499,20 @@ export default function CreateQuizPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function CreateQuizPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <CreateQuizPageInner />
+    </Suspense>
   );
 }
 

@@ -26,10 +26,11 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import type { AttemptSummary } from "@/lib/types";
 
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
-  const [attempts, setAttempts] = useState([]);
+  const [attempts, setAttempts] = useState<AttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<Array<{ quizId: string; title: string; description: string; questionCount: number }>>([]);

@@ -29,12 +29,14 @@ export async function isAdmin(): Promise<boolean> {
     if (ADMIN_ORGANIZATION_ID) {
       try {
         const client = await clerkClient();
-        const user = await client.users.getUser(userId);
-        const orgMemberships = user.organizationMemberships || [];
-        
+        const memberships = await client.users.getOrganizationMembershipList({
+          userId,
+          limit: 100,
+        });
+
         // Check if user is member of admin organization
-        const isAdminOrgMember = orgMemberships.some(
-          membership => membership.organization.id === ADMIN_ORGANIZATION_ID
+        const isAdminOrgMember = memberships.data.some(
+          (membership) => membership.organization.id === ADMIN_ORGANIZATION_ID
         );
         
         if (isAdminOrgMember) {
