@@ -218,6 +218,47 @@ export default function QuizPage({ params }: QuizPageProps) {
     }
   };
 
+  // Proctoring: Exam mode restrictions (must be before any early return)
+  useEffect(() => {
+    if (mode === "exam" && phase === "in-progress") {
+      // Disable copy, paste, cut, right-click
+      const preventDefault = (e: Event) => {
+        e.preventDefault();
+        if (e.type === "contextmenu") {
+          // Optionally show a message
+        }
+      };
+      document.addEventListener("copy", preventDefault);
+      document.addEventListener("paste", preventDefault);
+      document.addEventListener("cut", preventDefault);
+      document.addEventListener("contextmenu", preventDefault);
+
+      // Prevent text selection via CSS
+      const style = document.createElement("style");
+      style.id = "exam-proctoring-style";
+      style.innerHTML = `
+        #main-content {
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      return () => {
+        document.removeEventListener("copy", preventDefault);
+        document.removeEventListener("paste", preventDefault);
+        document.removeEventListener("cut", preventDefault);
+        document.removeEventListener("contextmenu", preventDefault);
+        const styleEl = document.getElementById("exam-proctoring-style");
+        if (styleEl) styleEl.remove();
+      };
+    }
+    // If not exam mode, do nothing and no cleanup needed
+    return undefined;
+  }, [mode, phase]);
+
   // Handle reset
   const handleReset = () => {
     resetQuiz();
