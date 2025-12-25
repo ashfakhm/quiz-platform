@@ -22,20 +22,18 @@ import { Question } from '../src/lib/models/Question.js';
 import { Quiz } from '../src/lib/models/Quiz.js';
 import { mockQuestions } from '../src/lib/mock-data.js';
 
-const MONGODB_URI: string | undefined = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   console.error('❌ MONGODB_URI environment variable is not set');
   process.exit(1);
 }
 
-// At this point, TypeScript knows MONGODB_URI is string (not undefined)
-const mongoUri: string = MONGODB_URI;
-
 async function seedDatabase() {
   try {
     console.log('🔌 Connecting to MongoDB...');
-    await mongoose.connect(mongoUri);
+    // Type assertion: we've already checked MONGODB_URI is not undefined above
+    await mongoose.connect(MONGODB_URI!);
     console.log('✅ Connected to MongoDB');
 
     // Clear existing data (optional - comment out if you want to keep existing data)
