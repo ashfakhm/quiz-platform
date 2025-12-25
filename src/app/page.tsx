@@ -30,7 +30,9 @@ export default function LandingPage() {
   const featuresRef = useRef<HTMLDivElement>(null);
   const [clerkConfigured, setClerkConfigured] = useState(false);
   const { isSignedIn, isLoaded: authLoaded } = useUser();
-  const [quizzes, setQuizzes] = useState<Array<{ quizId: string; title: string }>>([]);
+  const [quizzes, setQuizzes] = useState<
+    Array<{ quizId: string; title: string }>
+  >([]);
   const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
   useEffect(() => {
@@ -155,8 +157,8 @@ export default function LandingPage() {
     <AuroraBackground>
       {/* Navigation */}
       <nav className="relative z-10 flex items-center justify-between p-4 md:p-6 overflow-hidden">
-        <div className="flex items-center gap-2 min-w-0 flex-shrink">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-primary/50 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-2 min-w-0 shrink">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-primary/50 flex items-center justify-center shrink-0">
             <span className="text-primary-foreground font-bold text-lg">Q</span>
           </div>
           <span className="text-xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden sm:inline">
@@ -173,15 +175,20 @@ export default function LandingPage() {
           </a>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <ThemeToggle />
-                 {clerkConfigured ? (
-                   <ClerkComponents />
-                 ) : (
-                   <Button onClick={handleStartLearning} disabled={loadingQuizzes} size="sm" className="text-xs sm:text-sm">
-                     {loadingQuizzes ? "Loading..." : "Start Quiz"}
-                   </Button>
-                 )}
+          {clerkConfigured ? (
+            <ClerkComponents />
+          ) : (
+            <Button
+              onClick={handleStartLearning}
+              disabled={loadingQuizzes}
+              size="sm"
+              className="text-xs sm:text-sm"
+            >
+              {loadingQuizzes ? "Loading..." : "Start Quiz"}
+            </Button>
+          )}
         </div>
       </nav>
 

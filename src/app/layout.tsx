@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import { WebVitals } from "@/app/_components/WebVitals";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
@@ -21,14 +22,16 @@ const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 // ClerkProvider requires a publishableKey, so we must provide it
 function ClerkWrapper({ children }: { children: React.ReactNode }) {
   if (!publishableKey) {
-    console.error('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set in environment variables');
+    console.error(
+      "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set in environment variables"
+    );
     // Still render children to avoid breaking the app
     return <>{children}</>;
   }
   // Always provide ClerkProvider with the publishable key
   // Configure organizations to be optional (not required for sign-in)
   return (
-    <ClerkProvider 
+    <ClerkProvider
       publishableKey={publishableKey}
       appearance={{
         elements: {
@@ -85,6 +88,7 @@ export default function RootLayout({
               {children}
             </ThemeProvider>
           </main>
+          <WebVitals />
         </body>
       </html>
     </ClerkWrapper>

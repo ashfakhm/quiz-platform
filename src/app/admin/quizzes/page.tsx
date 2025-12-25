@@ -21,7 +21,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  AlertCircle,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 
 interface Quiz {
@@ -44,13 +51,16 @@ export default function QuizzesManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingQuizId, setDeletingQuizId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [quizToDelete, setQuizToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [quizToDelete, setQuizToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isLoaded && orgLoaded && user) {
       const adminStatus = checkAdminStatus({
         ...user,
-        organizationMemberships: organization 
+        organizationMemberships: organization
           ? [{ organization: { id: organization.id } }]
           : user.organizationMemberships,
       });
@@ -120,52 +130,18 @@ export default function QuizzesManagementPage() {
     setQuizToDelete(null);
   };
 
-  if (!isLoaded || checkingAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  // Redirect using router.replace for client navigation
+  useEffect(() => {
+    if (!isLoaded || checkingAdmin) return;
+    if (!isSignedIn) {
+      router.replace("/401");
+    } else if (!isAdmin) {
+      router.replace("/403");
+    }
+  }, [isLoaded, checkingAdmin, isSignedIn, isAdmin, router]);
 
-  if (!isSignedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
-              You need to be signed in to access this page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push("/sign-in")} className="w-full">
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              Only administrators can access this page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push("/dashboard")} className="w-full">
-              Go to Dashboard
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!isLoaded || checkingAdmin || !isSignedIn || !isAdmin) {
+    return null;
   }
 
   return (
@@ -181,11 +157,13 @@ export default function QuizzesManagementPage() {
             </Button>
           </Link>
         </div>
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Quiz Management</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
+              Quiz Management
+            </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Create, edit, and manage quizzes
             </p>
@@ -228,9 +206,14 @@ export default function QuizzesManagementPage() {
           /* Quiz List */
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {quizzes.map((quiz) => (
-              <Card key={quiz.quizId} className="hover:shadow-lg transition-shadow flex flex-col h-full">
+              <Card
+                key={quiz.quizId}
+                className="hover:shadow-lg transition-shadow flex flex-col h-full"
+              >
                 <CardHeader className="pb-3">
-                  <CardTitle className="line-clamp-2 text-base sm:text-lg">{quiz.title}</CardTitle>
+                  <CardTitle className="line-clamp-2 text-base sm:text-lg">
+                    {quiz.title}
+                  </CardTitle>
                   <CardDescription className="line-clamp-2 text-xs sm:text-sm mt-1">
                     {quiz.description || "No description"}
                   </CardDescription>
@@ -245,13 +228,13 @@ export default function QuizzesManagementPage() {
                     </div>
                   </div>
                   <div className="flex gap-2 items-stretch mt-4 pt-4 border-t border-border">
-                    <Link 
-                      href={`/admin/create-quiz?edit=${quiz.quizId}`} 
+                    <Link
+                      href={`/admin/create-quiz?edit=${quiz.quizId}`}
                       className="flex-1 flex"
                     >
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="w-full flex items-center justify-center text-xs sm:text-sm"
                       >
                         <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
@@ -289,11 +272,13 @@ export default function QuizzesManagementPage() {
           <DialogContent className="max-w-[95vw] sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                 <span>Delete Quiz</span>
               </DialogTitle>
-              <DialogDescription className="text-sm sm:text-base break-words">
-                Are you sure you want to delete "{quizToDelete?.title}"? This action cannot be undone and all associated data will be permanently removed.
+              <DialogDescription className="text-sm sm:text-base wrap-break-word">
+                Are you sure you want to delete &quot;{quizToDelete?.title}
+                &quot;? This action cannot be undone and all associated data
+                will be permanently removed.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
@@ -330,4 +315,3 @@ export default function QuizzesManagementPage() {
     </div>
   );
 }
-

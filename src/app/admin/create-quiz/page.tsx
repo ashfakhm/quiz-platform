@@ -63,7 +63,7 @@ function CreateQuizPageInner() {
     if (isLoaded && orgLoaded && user) {
       const adminStatus = checkAdminStatus({
         ...user,
-        organizationMemberships: organization 
+        organizationMemberships: organization
           ? [{ organization: { id: organization.id } }]
           : user.organizationMemberships,
       });
@@ -101,6 +101,7 @@ function CreateQuizPageInner() {
     }
   }, [isEditMode, isAdmin, isLoaded, editQuizId, loadQuizForEdit]);
 
+  // Loading spinner remains
   if (!isLoaded || checkingAdmin || loadingQuiz) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -109,44 +110,20 @@ function CreateQuizPageInner() {
     );
   }
 
+  // Redirect to /401 if not signed in
   if (!isSignedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
-              You need to be signed in to access this page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push("/sign-in")} className="w-full">
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    if (typeof window !== "undefined") {
+      window.location.replace("/401");
+    }
+    return null;
   }
 
+  // Redirect to /403 if not admin
   if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              Only administrators can create quizzes. You can take quizzes and view your results from the dashboard.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push("/dashboard")} className="w-full">
-              Go to Dashboard
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    if (typeof window !== "undefined") {
+      window.location.replace("/403");
+    }
+    return null;
   }
 
   const addQuestion = () => {
@@ -179,7 +156,11 @@ function CreateQuizPageInner() {
     setQuestions(updated);
   };
 
-  const updateOption = (questionIndex: number, optionIndex: number, value: string) => {
+  const updateOption = (
+    questionIndex: number,
+    optionIndex: number,
+    value: string
+  ) => {
     const updated = [...questions];
     updated[questionIndex].options[optionIndex] = value;
     setQuestions(updated);
@@ -231,11 +212,11 @@ function CreateQuizPageInner() {
 
     try {
       // Create or update quiz
-      const url = isEditMode 
+      const url = isEditMode
         ? `/api/admin/quizzes/${editQuizId}`
         : "/api/admin/create-quiz";
       const method = isEditMode ? "PUT" : "POST";
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -257,7 +238,9 @@ function CreateQuizPageInner() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || `Failed to ${isEditMode ? 'update' : 'create'} quiz`);
+        throw new Error(
+          error.error || `Failed to ${isEditMode ? "update" : "create"} quiz`
+        );
       }
 
       setSuccess(true);
@@ -282,17 +265,27 @@ function CreateQuizPageInner() {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle className="text-xl sm:text-2xl">{isEditMode ? "Edit Quiz" : "Create New Quiz"}</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl">
+                  {isEditMode ? "Edit Quiz" : "Create New Quiz"}
+                </CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                  {isEditMode 
+                  {isEditMode
                     ? "Update quiz details, questions, and answers"
                     : "Add questions, answers, and explanations to create a new quiz"}
                 </CardDescription>
               </div>
               <Link href="/admin/quizzes" className="w-full sm:w-auto">
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                  <span className="hidden sm:inline">{isEditMode ? "Back to Quizzes" : "View All Quizzes"}</span>
-                  <span className="sm:hidden">{isEditMode ? "Back" : "View All"}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
+                  <span className="hidden sm:inline">
+                    {isEditMode ? "Back to Quizzes" : "View All Quizzes"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isEditMode ? "Back" : "View All"}
+                  </span>
                 </Button>
               </Link>
             </div>
@@ -316,7 +309,7 @@ function CreateQuizPageInner() {
                     readOnly={isEditMode}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    {isEditMode 
+                    {isEditMode
                       ? "Quiz ID cannot be changed after creation"
                       : "Used in URL: /quiz/your-quiz-id"}
                   </p>
@@ -356,7 +349,9 @@ function CreateQuizPageInner() {
                   <div>
                     <h3 className="text-lg font-semibold">Questions</h3>
                     <p className="text-sm text-muted-foreground">
-                      {questions.length} question{questions.length !== 1 ? 's' : ''} added (unlimited allowed)
+                      {questions.length} question
+                      {questions.length !== 1 ? "s" : ""} added (unlimited
+                      allowed)
                     </p>
                   </div>
                   <Button
@@ -389,7 +384,8 @@ function CreateQuizPageInner() {
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium mb-2 block">
-                          Question Text <span className="text-destructive">*</span>
+                          Question Text{" "}
+                          <span className="text-destructive">*</span>
                         </label>
                         <textarea
                           value={question.question}
@@ -408,7 +404,10 @@ function CreateQuizPageInner() {
                           Options <span className="text-destructive">*</span>
                         </label>
                         {question.options.map((option, oIndex) => (
-                          <div key={oIndex} className="flex items-center gap-2 mb-2">
+                          <div
+                            key={oIndex}
+                            className="flex items-center gap-2 mb-2"
+                          >
                             <input
                               type="radio"
                               name={`correct-${qIndex}`}
@@ -436,7 +435,8 @@ function CreateQuizPageInner() {
 
                       <div>
                         <label className="text-sm font-medium mb-2 block">
-                          Explanation <span className="text-destructive">*</span>
+                          Explanation{" "}
+                          <span className="text-destructive">*</span>
                         </label>
                         <textarea
                           value={question.explanation.content}
@@ -467,7 +467,8 @@ function CreateQuizPageInner() {
               {success && (
                 <Alert>
                   <AlertDescription>
-                    Quiz {isEditMode ? 'updated' : 'created'} successfully! Redirecting...
+                    Quiz {isEditMode ? "updated" : "created"} successfully!
+                    Redirecting...
                   </AlertDescription>
                 </Alert>
               )}
@@ -477,12 +478,12 @@ function CreateQuizPageInner() {
                   {loading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      {isEditMode ? 'Updating...' : 'Creating...'}
+                      {isEditMode ? "Updating..." : "Creating..."}
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      {isEditMode ? 'Update Quiz' : 'Create Quiz'}
+                      {isEditMode ? "Update Quiz" : "Create Quiz"}
                     </>
                   )}
                 </Button>
@@ -515,4 +516,3 @@ export default function CreateQuizPage() {
     </Suspense>
   );
 }
-

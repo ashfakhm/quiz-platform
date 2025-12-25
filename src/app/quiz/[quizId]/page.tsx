@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, use } from "react";
-import { useUser, SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { useQuiz, useQuizValidation } from "@/hooks/useQuiz";
@@ -61,7 +61,10 @@ export default function QuizPage({ params }: QuizPageProps) {
     let correct = 0;
     questions.forEach((question) => {
       const selectedIndex = getAnswer(question.id);
-      if (selectedIndex !== undefined && selectedIndex === question.correctIndex) {
+      if (
+        selectedIndex !== undefined &&
+        selectedIndex === question.correctIndex
+      ) {
         correct++;
       }
     });
@@ -151,8 +154,12 @@ export default function QuizPage({ params }: QuizPageProps) {
     }
 
     // Submit based on mode
-    const finalScore = mode === "exam" ? submitExam() : calculateScore();
-    
+    if (mode === "exam") {
+      submitExam();
+    } else {
+      calculateScore();
+    }
+
     // For study mode, mark as completed
     if (mode === "study") {
       completeStudyMode();
@@ -172,10 +179,12 @@ export default function QuizPage({ params }: QuizPageProps) {
         );
 
         // Convert answers to array format for API
-        const answersArray = Object.entries(answersToSubmit).map(([questionId, selectedIndex]) => ({
-          questionId,
-          selectedIndex: Number(selectedIndex),
-        }));
+        const answersArray = Object.entries(answersToSubmit).map(
+          ([questionId, selectedIndex]) => ({
+            questionId,
+            selectedIndex: Number(selectedIndex),
+          })
+        );
 
         // API route expects: { answers: Array, mode: string }
         // userId is obtained from Clerk auth on the server side
@@ -191,8 +200,12 @@ export default function QuizPage({ params }: QuizPageProps) {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-          throw new Error(errorData.error || errorData.message || "Failed to save attempt");
+          const errorData = await response
+            .json()
+            .catch(() => ({ message: "Unknown error" }));
+          throw new Error(
+            errorData.error || errorData.message || "Failed to save attempt"
+          );
         }
 
         const result = await response.json();
@@ -322,22 +335,31 @@ export default function QuizPage({ params }: QuizPageProps) {
               Quiz Questions
             </h2>
             {/* Sign-in reminder for unauthenticated users */}
-            {phase === "in-progress" && mode === "exam" && authLoaded && !isSignedIn && (
-              <Alert className="border-amber-500/50 bg-amber-500/10">
-                <AlertCircle className="h-4 w-4 text-amber-500" />
-                <AlertTitle>Sign in required to submit</AlertTitle>
-                <AlertDescription className="flex items-center justify-between gap-4">
-                  <span>
-                    You can take the quiz without signing in, but you'll need to sign in to submit your answers and save your results.
-                  </span>
-                  <SignInButton mode="modal">
-                    <Button size="sm" variant="outline" className="whitespace-nowrap">
-                      Sign In
-                    </Button>
-                  </SignInButton>
-                </AlertDescription>
-              </Alert>
-            )}
+            {phase === "in-progress" &&
+              mode === "exam" &&
+              authLoaded &&
+              !isSignedIn && (
+                <Alert className="border-amber-500/50 bg-amber-500/10">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertTitle>Sign in required to submit</AlertTitle>
+                  <AlertDescription className="flex items-center justify-between gap-4">
+                    <span>
+                      You can take the quiz without signing in, but you&apos;ll
+                      need to sign in to submit your answers and save your
+                      results.
+                    </span>
+                    <SignInButton mode="modal">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="whitespace-nowrap"
+                      >
+                        Sign In
+                      </Button>
+                    </SignInButton>
+                  </AlertDescription>
+                </Alert>
+              )}
             {/* Score Summary (Review Mode) */}
             {phase === "review" && score !== null && (
               <div className="mb-8">
@@ -424,7 +446,8 @@ export default function QuizPage({ params }: QuizPageProps) {
                   role="status"
                   aria-live="polite"
                 >
-                  🎉 You&apos;ve reviewed all questions! Click &quot;Complete Study&quot; to save your results.
+                  🎉 You&apos;ve reviewed all questions! Click &quot;Complete
+                  Study&quot; to save your results.
                 </p>
               </div>
             )}
