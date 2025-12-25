@@ -194,7 +194,7 @@ export default function LandingPage() {
         >
           <div className="animate-in inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
             <Zap className="w-4 h-4" />
-            50 Questions • Study & Exam Modes
+            Study & Exam Modes
           </div>
 
           <h1 className="animate-in text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl mb-6">
