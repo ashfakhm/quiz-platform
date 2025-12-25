@@ -60,7 +60,8 @@ export function OptionButton({
         "w-full flex items-center gap-3 p-4 rounded-lg border transition-all duration-200",
         "text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         disabled && !showFeedback && "cursor-not-allowed opacity-50",
-        getStateClasses()
+        getStateClasses(),
+        "bg-card text-card-foreground dark:bg-gray-800 dark:text-white"
       )}
     >
       {/* Option label (A, B, C, D) */}
@@ -73,8 +74,8 @@ export function OptionButton({
             : showFeedback && isSelected && !isCorrect
             ? "bg-rose-500 text-white shadow-sm"
             : isSelected
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "bg-muted text-muted-foreground"
+            ? "bg-primary text-primary-foreground shadow-sm dark:bg-primary dark:text-white"
+            : "bg-muted text-muted-foreground dark:bg-gray-700 dark:text-gray-300"
         )}
       >
         {showFeedback && (isSelected || isCorrect) ? (
@@ -97,7 +98,9 @@ export function OptionButton({
       </span>
 
       {/* Option text */}
-      <span className="flex-1 text-foreground font-medium">{option}</span>
+      <span className="flex-1 text-foreground font-medium dark:text-white">
+        {option}
+      </span>
 
       {/* Correctness indicator for non-selected correct answer */}
       {showFeedback && isCorrect && !isSelected && (

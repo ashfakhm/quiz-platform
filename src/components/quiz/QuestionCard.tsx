@@ -37,17 +37,14 @@ export function QuestionCard({
       transition={{ duration: 0.4, ease: [0.25, 0.4, 0.25, 1], delay: 0.05 }}
     >
       <Card
-        className={`
-          relative overflow-hidden transition-all duration-300
-          backdrop-blur-md border-border/50
-          ${
-            isAnswered && showFeedback
-              ? isCorrect
-                ? "border-emerald-500/50 bg-emerald-500/5"
-                : "border-rose-500/50 bg-rose-500/5"
-              : "hover:border-primary/30 hover:shadow-sm"
-          }
-        `}
+        className={cn(
+          "relative overflow-hidden transition-all duration-300 backdrop-blur-md border-border/50 bg-card text-card-foreground dark:bg-gray-800 dark:text-white",
+          isAnswered && showFeedback
+            ? isCorrect
+              ? "border-emerald-500/50 bg-emerald-500/5 dark:bg-emerald-900/10"
+              : "border-rose-500/50 bg-rose-500/5 dark:bg-rose-900/10"
+            : "hover:border-primary/30 hover:shadow-sm dark:hover:border-primary/60"
+        )}
         id={`question-${question.id}`}
       >
         {/* Question number badge */}
@@ -79,7 +76,7 @@ export function QuestionCard({
 
         <CardContent className="space-y-4">
           {/* Question text */}
-          <p className="text-lg font-medium leading-relaxed text-foreground">
+          <p className="text-lg font-medium leading-relaxed text-foreground dark:text-white">
             {question.question}
           </p>
 

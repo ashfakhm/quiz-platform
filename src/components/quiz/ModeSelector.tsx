@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { BookOpen, ClipboardCheck, Lock } from 'lucide-react';
-import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
-import type { QuizMode } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { MouseEvent } from 'react';
+import { BookOpen, ClipboardCheck, Lock } from "lucide-react";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import type { QuizMode } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { MouseEvent } from "react";
 
 interface ModeSelectorProps {
   selectedMode: QuizMode | null;
@@ -17,38 +17,43 @@ export function ModeSelector({
   isLocked,
   onSelectMode,
 }: ModeSelectorProps) {
-  const modes: { mode: QuizMode; title: string; description: string; icon: typeof BookOpen }[] = [
+  const modes: {
+    mode: QuizMode;
+    title: string;
+    description: string;
+    icon: typeof BookOpen;
+  }[] = [
     {
-      mode: 'study',
-      title: 'Study Mode',
-      description: 'Learn with immediate feedback and explanations',
+      mode: "study",
+      title: "Study Mode",
+      description: "Learn with immediate feedback and explanations",
       icon: BookOpen,
     },
     {
-      mode: 'exam',
-      title: 'Exam Mode',
-      description: 'Test yourself without hints, see results at the end',
+      mode: "exam",
+      title: "Exam Mode",
+      description: "Test yourself without hints, see results at the end",
       icon: ClipboardCheck,
     },
   ];
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-8"
       >
-        <h2 className="text-3xl font-bold text-foreground mb-3 tracking-tight">
+        <h2 className="text-3xl font-bold text-foreground dark:text-white mb-3 tracking-tight">
           Choose Your Mode
         </h2>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-lg dark:text-gray-400">
           Select how you want to approach this quiz
         </p>
-        
+
         {isLocked && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex items-center justify-center gap-2 mt-4 text-amber-500 bg-amber-500/10 py-2 px-4 rounded-full w-fit mx-auto"
@@ -108,12 +113,13 @@ function SpotlightCard({
       disabled={isLocked}
       onMouseMove={handleMouseMove}
       className={cn(
-        'group relative flex flex-col items-center text-center p-8 rounded-2xl border transition-all duration-300 overflow-hidden bg-card h-full',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        isLocked && 'cursor-not-allowed opacity-50 grayscale',
+        "group relative flex flex-col items-center text-center p-8 rounded-2xl border transition-all duration-300 overflow-hidden bg-card h-full",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        isLocked && "cursor-not-allowed opacity-50 grayscale",
         isSelected
-          ? 'border-primary shadow-lg shadow-primary/10'
-          : 'border-border hover:border-border/80'
+          ? "border-primary shadow-lg shadow-primary/10 dark:border-primary dark:shadow-primary/20"
+          : "border-border hover:border-border/80 dark:border-gray-700 dark:hover:border-gray-500",
+        "bg-card text-card-foreground dark:bg-gray-800 dark:text-white"
       )}
     >
       {/* Spotlight Effect */}
@@ -126,31 +132,29 @@ function SpotlightCard({
               rgba(14, 165, 233, 0.1),
               transparent 80%
             )
-          `
+          `,
         }}
       />
-      
+
       {/* Active Indicator Background */}
-      {isSelected && (
-        <div className="absolute inset-0 bg-primary/5 z-0" />
-      )}
+      {isSelected && <div className="absolute inset-0 bg-primary/5 z-0" />}
 
       <div className="relative z-10 flex flex-col items-center h-full">
         <div
           className={cn(
-            'w-14 h-14 rounded-2xl flex items-center justify-center mb-5 shadow-sm transition-colors duration-300',
+            "w-14 h-14 rounded-2xl flex items-center justify-center mb-5 shadow-sm transition-colors duration-300",
             isSelected
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary'
+              ? "bg-primary text-primary-foreground dark:bg-primary dark:text-white"
+              : "bg-muted text-muted-foreground group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary dark:bg-gray-700 dark:text-gray-300 dark:group-hover:bg-primary/20 dark:group-hover:text-primary"
           )}
         >
           <Icon className="w-7 h-7" />
         </div>
 
-        <h3 className="text-xl font-bold text-foreground mb-3">
+        <h3 className="text-xl font-bold text-foreground dark:text-white mb-3">
           {title}
         </h3>
-        <p className="text-muted-foreground leading-relaxed">
+        <p className="text-muted-foreground leading-relaxed dark:text-gray-400">
           {description}
         </p>
       </div>

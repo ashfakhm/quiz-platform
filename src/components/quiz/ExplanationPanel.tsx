@@ -68,28 +68,25 @@ export function ExplanationPanel({ explanation, isCorrect }: ExplanationPanelPro
       initial={{ opacity: 0, height: 0, y: -10 }}
       animate={{ opacity: 1, height: 'auto', y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={`
-        overflow-hidden rounded-lg border-2 mt-4
-        ${isCorrect === true
-          ? 'border-emerald-500/30 bg-emerald-500/5'
+      className={cn(
+        "overflow-hidden rounded-lg border-2 mt-4 bg-card text-card-foreground dark:bg-gray-800 dark:text-white",
+        isCorrect === true
+          ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-900/10'
           : isCorrect === false
-          ? 'border-rose-500/30 bg-rose-500/5'
-          : 'border-primary/30 bg-primary/5'
-        }
-      `}
+          ? 'border-rose-500/30 bg-rose-500/5 dark:bg-rose-900/10'
+          : 'border-primary/30 bg-primary/5 dark:bg-primary/10'
+      )}
     >
       {/* Header */}
       <div
-        className={`
-          flex items-center gap-2 px-4 py-2 border-b
-          ${isCorrect === true
-            ? 'border-emerald-500/20 bg-emerald-500/10'
+        className={cn(
+          "flex items-center gap-2 px-4 py-2 border-b",
+          isCorrect === true
+            ? 'border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-900/20'
             : isCorrect === false
-            ? 'border-rose-500/20 bg-rose-500/10'
-            : 'border-primary/20 bg-primary/10'
-          }
-        `}
-      >
+            ? 'border-rose-500/20 bg-rose-500/10 dark:bg-rose-900/20'
+            : 'border-primary/20 bg-primary/10 dark:bg-primary/20'
+        )}
         {isCorrect === true ? (
           <CheckCircle2 className="w-5 h-5 text-emerald-500" />
         ) : isCorrect === false ? (
@@ -98,15 +95,14 @@ export function ExplanationPanel({ explanation, isCorrect }: ExplanationPanelPro
           <Lightbulb className="w-5 h-5 text-primary" />
         )}
         <span
-          className={`
-            font-semibold text-sm
-            ${isCorrect === true
+          className={cn(
+            "font-semibold text-sm",
+            isCorrect === true
               ? 'text-emerald-600 dark:text-emerald-400'
               : isCorrect === false
               ? 'text-rose-600 dark:text-rose-400'
-              : 'text-primary'
-            }
-          `}
+              : 'text-primary dark:text-primary-200'
+          )}
         >
           {isCorrect === true
             ? 'Correct! Here\'s why:'
@@ -118,7 +114,7 @@ export function ExplanationPanel({ explanation, isCorrect }: ExplanationPanelPro
       </div>
 
       {/* Content */}
-      <div className="px-4 py-3 text-sm text-muted-foreground leading-relaxed">
+      <div className="px-4 py-3 text-sm text-muted-foreground leading-relaxed dark:text-gray-400">
         {renderContent(content)}
       </div>
     </motion.div>
