@@ -2,8 +2,11 @@
  * Seed script to populate the database with initial quiz data
  * Run with: npx tsx scripts/seed-database.ts
  * Or: npm run seed (if added to package.json)
+ * 
+ * NOTE: This file is excluded from Next.js build via tsconfig.json
  */
 
+// @ts-nocheck - This file is not part of the Next.js build
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
