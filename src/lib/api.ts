@@ -2,19 +2,15 @@
 import type { QuizResponse, AttemptSubmission, AttemptSummary, ApiError } from './types';
 import { getMockQuizResponse } from './mock-data';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-
-// Use mock data in development when no API URL is set
-const USE_MOCK = !API_BASE_URL;
+// Use mock data only if explicitly enabled via environment variable
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 class ApiClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    
-    const response = await fetch(url, {
+    const response = await fetch(endpoint, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

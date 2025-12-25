@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import {
   BookOpen,
   ClipboardCheck,
@@ -112,22 +113,37 @@ export function ProgressHeader({
             </Button>
           )}
 
-          {/* Submit button (Exam mode only) */}
-          {mode === "exam" && phase === "in-progress" && (
+          {/* Submit button (Exam and Study mode) */}
+          {(mode === "exam" || mode === "study") && phase === "in-progress" && (
             <Button
               onClick={onSubmit}
               disabled={!canSubmit}
               className={cn(
                 "gap-1.5 transition-all duration-300",
                 canSubmit
-                  ? "bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
+                  ? mode === "exam"
+                    ? "bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
+                    : "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25"
                   : "opacity-50"
               )}
             >
               <CheckCircle className="w-4 h-4" />
-              <span>Submit</span>
+              <span>{mode === "exam" ? "Submit" : "Complete"}</span>
             </Button>
           )}
+
+          {/* Authentication UI */}
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button variant="ghost" size="sm" className="gap-1.5">
+                <span className="hidden sm:inline">Sign In</span>
+                <span className="sm:hidden">Sign In</span>
+              </Button>
+            </SignInButton>
+          </SignedOut>
 
           <ThemeToggle />
         </div>

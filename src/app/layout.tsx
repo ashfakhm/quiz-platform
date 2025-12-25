@@ -14,15 +14,34 @@ const geistMono = Geist_Mono({
 });
 
 // Check if Clerk is properly configured
+// In Next.js, NEXT_PUBLIC_* variables are available at build time
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-const isClerkConfigured = publishableKey && publishableKey.startsWith("pk_");
 
+// Always wrap with ClerkProvider to ensure Clerk components work
+// ClerkProvider requires a publishableKey, so we must provide it
 function ClerkWrapper({ children }: { children: React.ReactNode }) {
-  if (!isClerkConfigured) {
-    // Clerk not configured - render without auth provider
+  if (!publishableKey) {
+    console.error('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set in environment variables');
+    // Still render children to avoid breaking the app
     return <>{children}</>;
   }
-  return <ClerkProvider>{children}</ClerkProvider>;
+  // Always provide ClerkProvider with the publishable key
+  // Configure organizations to be optional (not required for sign-in)
+  return (
+    <ClerkProvider 
+      publishableKey={publishableKey}
+      appearance={{
+        elements: {
+          // Hide organization creation prompts
+          organizationSwitcherTrigger: "hidden",
+          organizationSwitcherButton: "hidden",
+          organizationSwitcher: "hidden",
+        },
+      }}
+    >
+      {children}
+    </ClerkProvider>
+  );
 }
 
 export default function RootLayout({
@@ -35,7 +54,6 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
-          <link rel="manifest" href="/favicon/site.webmanifest" />
           <meta name="theme-color" content="#000" />
           <link rel="canonical" href="https://yourdomain.com/" />
           <meta

@@ -6,6 +6,10 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/quiz/demo(.*)', // Allow demo quiz without auth
+  '/quiz/(.*)', // Allow quiz pages without auth (optional - remove if you want quizzes to require auth)
+  '/quizzes', // Allow quiz selection page without auth
+  '/api/quizzes', // Allow public quiz listing API
+  '/api/quiz/(.*)/questions', // Allow quiz questions API without auth (for unauthenticated users to take quizzes)
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -22,3 +26,4 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 };
+

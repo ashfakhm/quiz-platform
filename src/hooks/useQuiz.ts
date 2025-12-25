@@ -20,6 +20,11 @@ const initialState: QuizState = {
   isModeLocked: false,
 };
 
+// Helper function to generate localStorage key for quiz persistence
+function getPersistKey(quizId: string): string {
+  return `quiz-progress-${quizId}`;
+}
+
 export function useQuiz() {
   const [state, setState] = useState<QuizState>(initialState);
   const [quizId, setQuizId] = useState<string | null>(null);
@@ -132,10 +137,12 @@ export function useQuiz() {
   );
 
   // Submit exam (Exam mode only)
+  // Users can submit with partial answers - they don't need to answer all questions
   const submitExam = useCallback(() => {
     setState((prev) => {
       if (prev.phase !== "in-progress" || prev.mode !== "exam") return prev;
-      if (prev.answers.size !== prev.questions.length) return prev;
+      // Allow submission even if not all questions are answered
+      // Removed: if (prev.answers.size !== prev.questions.length) return prev;
 
       const score = calculateScore();
       return {
@@ -157,17 +164,28 @@ export function useQuiz() {
     return calculateScore();
   }, [calculateScore]);
 
-  // Complete study mode (optional - just marks completion)
+  // Complete study mode - marks completion and transitions to review
   const completeStudyMode = useCallback(() => {
     setState((prev) => {
-      if (prev.mode !== "study") return prev;
+      if (prev.mode !== "study" || prev.phase !== "in-progress") return prev;
+      const score = calculateScore();
       return {
         ...prev,
         phase: "submitted",
-        score: calculateScore(),
+        score,
         endTime: new Date(),
       };
     });
+
+    // Automatically transition to review mode
+    setTimeout(() => {
+      setState((prev) => ({
+        ...prev,
+        phase: "review",
+      }));
+    }, 100);
+
+    return calculateScore();
   }, [calculateScore]);
 
   // Reset quiz to initial state
@@ -284,9 +302,9 @@ export function useQuizValidation() {
     (questions: Question[]): ValidationResult => {
       const errors: string[] = [];
 
-      // Check question count
-      if (questions.length !== 50) {
-        errors.push(`Expected 50 questions, got ${questions.length}`);
+      // Check question count - must have at least 1 question
+      if (questions.length === 0) {
+        errors.push('Quiz must have at least one question');
       }
 
       // Check for duplicate IDs
