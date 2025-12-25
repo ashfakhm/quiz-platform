@@ -368,7 +368,7 @@ export default function LandingPage() {
               </span>
             </div>
             <span className="text-sm text-muted-foreground">
-              QuizMaster Pro © 2025. All rights reserved.
+              {`QuizMaster Pro © ${new Date().getFullYear()}. All rights reserved.`}
             </span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
