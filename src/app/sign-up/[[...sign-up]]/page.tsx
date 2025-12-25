@@ -4,6 +4,9 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background to-background/80 p-4">
       <SignUp
+        fallbackRedirectUrl="/"
+        routing="path"
+        path="/sign-up"
         appearance={{
           elements: {
             rootBox: "mx-auto",
@@ -18,6 +21,15 @@ export default function SignUpPage() {
             footerActionLink: "text-primary hover:text-primary/80",
             identityPreviewText: "text-foreground",
             identityPreviewEditButton: "text-primary",
+            // Hide organization-related UI completely
+            organizationSwitcherTrigger: "hidden",
+            organizationSwitcherButton: "hidden",
+            organizationPreview: "hidden",
+            organizationSwitcher: "hidden",
+            organizationSwitcherPopoverCard: "hidden",
+            organizationSwitcherPopoverActions: "hidden",
+            organizationCreateButton: "hidden",
+            organizationCreateForm: "hidden",
           },
         }}
       />

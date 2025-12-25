@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, use } from "react";
+import { useUser, SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { useQuiz, useQuizValidation } from "@/hooks/useQuiz";
 import type { Question } from "@/lib/types";
@@ -14,7 +16,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
 
 interface QuizPageProps {
   params: Promise<{ quizId: string }>;
@@ -24,11 +26,8 @@ export default function QuizPage({ params }: QuizPageProps) {
   // Unwrap params using React.use()
   const { quizId } = use(params);
 
-  // ...existing code...
-
-  // ...existing code...
-
-  // ...existing code...
+  const { isLoaded: authLoaded, isSignedIn } = useUser(); // Get auth state
+  const router = useRouter(); // Initialize useRouter
 
   const [quizData, setQuizData] = useState<QuizResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,12 +48,25 @@ export default function QuizPage({ params }: QuizPageProps) {
     selectMode,
     selectAnswer,
     submitExam,
+    completeStudyMode,
     resetQuiz,
     getAnswer,
     shouldShowExplanation,
     shouldShowFeedback,
     canChangeAnswer,
   } = useQuiz();
+
+  // Calculate score manually for study mode
+  const calculateScore = () => {
+    let correct = 0;
+    questions.forEach((question) => {
+      const selectedIndex = getAnswer(question.id);
+      if (selectedIndex !== undefined && selectedIndex === question.correctIndex) {
+        correct++;
+      }
+    });
+    return correct;
+  };
 
   // Warn on accidental navigation if quiz in progress and not all answered
   useEffect(() => {
@@ -114,27 +126,81 @@ export default function QuizPage({ params }: QuizPageProps) {
     }
   }, [phase]);
 
-  // Handle submit
+  // Handle submit - allows submission with partial answers
   const handleSubmit = async () => {
-    const finalScore = submitExam();
+    // Only submit if at least one question is answered
+    if (answeredCount === 0) {
+      return;
+    }
+
+    // Submit in both exam and study mode
+    if (mode !== "exam" && mode !== "study") {
+      return;
+    }
+
+    // Check if user is authenticated - require sign-in to submit
+    if (!authLoaded) {
+      return; // Wait for auth to load
+    }
+
+    if (!isSignedIn) {
+      // Show sign-in prompt - redirect to sign-in page with return URL
+      const currentUrl = window.location.pathname;
+      router.push(`/sign-in?redirect_url=${encodeURIComponent(currentUrl)}`);
+      return;
+    }
+
+    // Submit based on mode
+    const finalScore = mode === "exam" ? submitExam() : calculateScore();
+    
+    // For study mode, mark as completed
+    if (mode === "study") {
+      completeStudyMode();
+    }
 
     // Submit to backend (optional - uses mock API in development)
-    if (quizData) {
+    if (quizData && mode) {
       try {
-        await apiClient.submitAttempt({
-          userId: "anonymous", // Will be replaced with Clerk user ID when configured
-          quizId: quizData.quizId,
-          answers: Object.fromEntries(
-            (questions as Question[]).map((q) => [q.id, getAnswer(q.id) ?? -1])
-          ),
-          score: finalScore,
-          totalQuestions: questions.length,
-          startTime: new Date().toISOString(),
-          endTime: new Date().toISOString(),
+        // Only include answered questions in the submission
+        const answersToSubmit = Object.fromEntries(
+          (questions as Question[])
+            .filter((q) => {
+              const answer = getAnswer(q.id);
+              return answer !== undefined && answer !== null && answer !== -1;
+            })
+            .map((q) => [q.id, getAnswer(q.id) ?? -1])
+        );
+
+        // Convert answers to array format for API
+        const answersArray = Object.entries(answersToSubmit).map(([questionId, selectedIndex]) => ({
+          questionId,
+          selectedIndex: Number(selectedIndex),
+        }));
+
+        // API route expects: { answers: Array, mode: string }
+        // userId is obtained from Clerk auth on the server side
+        const response = await fetch(`/api/quiz/${quizData.quizId}/attempt`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            answers: answersArray,
+            mode: mode,
+          }),
         });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+          throw new Error(errorData.error || errorData.message || "Failed to save attempt");
+        }
+
+        const result = await response.json();
+        console.log("Attempt saved successfully:", result);
       } catch (err) {
         console.error("Failed to save attempt:", err);
         // Don't block the user, just log the error
+        // The quiz can still continue to review mode
       }
     }
   };
@@ -214,7 +280,7 @@ export default function QuizPage({ params }: QuizPageProps) {
         isModeLocked={isModeLocked}
         onSubmit={handleSubmit}
         onReset={handleReset}
-        canSubmit={allAnswered}
+        canSubmit={answeredCount > 0} // Allow submission if at least one question is answered
       />
 
       {/* Main Content */}
@@ -255,6 +321,23 @@ export default function QuizPage({ params }: QuizPageProps) {
             <h2 id="questions-heading" className="sr-only">
               Quiz Questions
             </h2>
+            {/* Sign-in reminder for unauthenticated users */}
+            {phase === "in-progress" && mode === "exam" && authLoaded && !isSignedIn && (
+              <Alert className="border-amber-500/50 bg-amber-500/10">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <AlertTitle>Sign in required to submit</AlertTitle>
+                <AlertDescription className="flex items-center justify-between gap-4">
+                  <span>
+                    You can take the quiz without signing in, but you'll need to sign in to submit your answers and save your results.
+                  </span>
+                  <SignInButton mode="modal">
+                    <Button size="sm" variant="outline" className="whitespace-nowrap">
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                </AlertDescription>
+              </Alert>
+            )}
             {/* Score Summary (Review Mode) */}
             {phase === "review" && score !== null && (
               <div className="mb-8">
@@ -294,11 +377,11 @@ export default function QuizPage({ params }: QuizPageProps) {
                 <Button
                   size="lg"
                   onClick={handleSubmit}
-                  disabled={!allAnswered}
+                  disabled={answeredCount === 0}
                   className={`
                     gap-2 shadow-lg transition-all duration-300
                     ${
-                      allAnswered
+                      answeredCount > 0
                         ? "bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/25"
                         : "opacity-50"
                     }
@@ -310,24 +393,39 @@ export default function QuizPage({ params }: QuizPageProps) {
               </div>
             )}
 
-            {/* Completion message for Study Mode */}
+            {/* Bottom Submit Button (Study Mode) */}
+            {mode === "study" && phase === "in-progress" && (
+              <div className="sticky bottom-4 flex justify-center pt-4">
+                <Button
+                  size="lg"
+                  onClick={handleSubmit}
+                  disabled={answeredCount === 0}
+                  className={`
+                    gap-2 shadow-lg transition-all duration-300
+                    ${
+                      answeredCount > 0
+                        ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-blue-500/25"
+                        : "opacity-50"
+                    }
+                  `}
+                  aria-label="Complete Study Mode"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  Complete Study ({answeredCount}/{questions.length} answered)
+                </Button>
+              </div>
+            )}
+
+            {/* Completion message for Study Mode (optional info) */}
             {mode === "study" && allAnswered && phase === "in-progress" && (
-              <div className="text-center py-8">
+              <div className="text-center py-4 mb-4">
                 <p
-                  className="text-muted-foreground mb-4"
+                  className="text-muted-foreground"
                   role="status"
                   aria-live="polite"
                 >
-                  {/* Use HTML entity for apostrophe */}
-                  🎉 You&apos;ve reviewed all questions!
+                  🎉 You&apos;ve reviewed all questions! Click &quot;Complete Study&quot; to save your results.
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  aria-label="Restart Quiz"
-                >
-                  Start Over
-                </Button>
               </div>
             )}
           </section>

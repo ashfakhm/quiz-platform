@@ -20,17 +20,17 @@ export function ScoreSummary({
 }: ScoreSummaryProps) {
   const percentage = Math.round((score / totalQuestions) * 100);
 
-  // Determine grade and colors
-  const getGrade = () => {
-    if (percentage >= 90) return { grade: 'A+', color: 'text-emerald-500', bg: 'from-emerald-500/20 to-emerald-600/10' };
-    if (percentage >= 80) return { grade: 'A', color: 'text-emerald-400', bg: 'from-emerald-400/20 to-emerald-500/10' };
-    if (percentage >= 70) return { grade: 'B', color: 'text-blue-500', bg: 'from-blue-500/20 to-blue-600/10' };
-    if (percentage >= 60) return { grade: 'C', color: 'text-yellow-500', bg: 'from-yellow-500/20 to-yellow-600/10' };
-    if (percentage >= 50) return { grade: 'D', color: 'text-orange-500', bg: 'from-orange-500/20 to-orange-600/10' };
-    return { grade: 'F', color: 'text-rose-500', bg: 'from-rose-500/20 to-rose-600/10' };
+  // Determine colors based on percentage
+  const getColors = () => {
+    if (percentage >= 90) return { color: 'text-emerald-500', bg: 'from-emerald-500/20 to-emerald-600/10' };
+    if (percentage >= 80) return { color: 'text-emerald-400', bg: 'from-emerald-400/20 to-emerald-500/10' };
+    if (percentage >= 70) return { color: 'text-blue-500', bg: 'from-blue-500/20 to-blue-600/10' };
+    if (percentage >= 60) return { color: 'text-yellow-500', bg: 'from-yellow-500/20 to-yellow-600/10' };
+    if (percentage >= 50) return { color: 'text-orange-500', bg: 'from-orange-500/20 to-orange-600/10' };
+    return { color: 'text-rose-500', bg: 'from-rose-500/20 to-rose-600/10' };
   };
 
-  const { grade, color, bg } = getGrade();
+  const { color, bg } = getColors();
 
   return (
     <motion.div
@@ -73,15 +73,6 @@ export function ScoreSummary({
               {percentage}%
             </div>
             <p className="text-sm text-muted-foreground">Accuracy</p>
-          </div>
-
-          <div className="h-20 w-px bg-border" />
-
-          <div className="text-center">
-            <div className={`text-5xl md:text-6xl font-bold ${color} mb-2`}>
-              {grade}
-            </div>
-            <p className="text-sm text-muted-foreground">Grade</p>
           </div>
         </div>
 

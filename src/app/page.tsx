@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useUser, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AuroraBackground } from "@/components/ui/aurora-background";
@@ -28,6 +29,9 @@ export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const [clerkConfigured, setClerkConfigured] = useState(false);
+  const { isSignedIn, isLoaded: authLoaded } = useUser();
+  const [quizzes, setQuizzes] = useState<Array<{ quizId: string; title: string }>>([]);
+  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
   useEffect(() => {
     // Check if Clerk is configured
@@ -39,6 +43,35 @@ export default function LandingPage() {
       }, 0);
     }
   }, []);
+
+  // Fetch available quizzes
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const response = await fetch("/api/quizzes");
+        if (response.ok) {
+          const data = await response.json();
+          setQuizzes(data.quizzes || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch quizzes:", err);
+      } finally {
+        setLoadingQuizzes(false);
+      }
+    };
+    fetchQuizzes();
+  }, []);
+
+  // Handle "Start Learning" click
+  const handleStartLearning = () => {
+    if (quizzes.length > 0) {
+      // Always go to quizzes page to show selection
+      window.location.href = "/quizzes";
+    } else {
+      // No quizzes - show message or stay on page
+      alert("No quizzes available at the moment.");
+    }
+  };
 
   useEffect(() => {
     // Hero animation
@@ -121,12 +154,12 @@ export default function LandingPage() {
   return (
     <AuroraBackground>
       {/* Navigation */}
-      <nav className="relative z-10 flex items-center justify-between p-4 md:p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
+      <nav className="relative z-10 flex items-center justify-between p-4 md:p-6 overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0 flex-shrink">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-primary/50 flex items-center justify-center flex-shrink-0">
             <span className="text-primary-foreground font-bold text-lg">Q</span>
           </div>
-          <span className="text-xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden sm:inline">
             QuizMaster
           </span>
           {/* Accessibility: Skip to main content */}
@@ -140,15 +173,15 @@ export default function LandingPage() {
           </a>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
           <ThemeToggle />
-          {clerkConfigured ? (
-            <ClerkComponents />
-          ) : (
-            <Link href="/quiz/nism-practice">
-              <Button>Start Quiz</Button>
-            </Link>
-          )}
+                 {clerkConfigured ? (
+                   <ClerkComponents />
+                 ) : (
+                   <Button onClick={handleStartLearning} disabled={loadingQuizzes} size="sm" className="text-xs sm:text-sm">
+                     {loadingQuizzes ? "Loading..." : "Start Quiz"}
+                   </Button>
+                 )}
         </div>
       </nav>
 
@@ -180,20 +213,38 @@ export default function LandingPage() {
           </p>
 
           <div className="animate-in flex flex-col sm:flex-row items-center gap-4">
-            <Link href="/quiz/nism-practice">
+            {clerkConfigured && authLoaded && !isSignedIn ? (
+              // Show Clerk Sign In button for unauthenticated users
+              <SignInButton mode="modal">
+                <Button
+                  size="lg"
+                  className="gap-2 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 h-12 px-8"
+                >
+                  Start Learning Now
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </SignInButton>
+            ) : (
+              // Allow authenticated users or when Clerk not configured
               <Button
                 size="lg"
                 className="gap-2 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 h-12 px-8"
+                onClick={handleStartLearning}
+                disabled={loadingQuizzes}
               >
-                Start Learning Now
-                <ArrowRight className="w-4 h-4" />
+                {loadingQuizzes ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Start Learning Now
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </Button>
-            </Link>
-            <Link href="/quiz/nism-practice">
-              <Button variant="outline" size="lg" className="h-12 px-8">
-                Try Demo Quiz
-              </Button>
-            </Link>
+            )}
           </div>
         </section>
 
@@ -262,15 +313,38 @@ export default function LandingPage() {
                   with our platform. Start learning today.
                 </p>
 
-                <Link href="/quiz/nism-practice">
+                {clerkConfigured && authLoaded && !isSignedIn ? (
+                  // Show Clerk Sign Up button for unauthenticated users
+                  <SignUpButton mode="modal" fallbackRedirectUrl="/">
+                    <Button
+                      size="lg"
+                      className="gap-2 bg-linear-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg h-12 px-8 relative z-10"
+                    >
+                      Get Started Free
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </SignUpButton>
+                ) : (
+                  // Allow authenticated users
                   <Button
                     size="lg"
-                    className="gap-2 bg-linear-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg h-12 px-8"
+                    className="gap-2 bg-linear-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg h-12 px-8 relative z-10"
+                    onClick={handleStartLearning}
+                    disabled={loadingQuizzes}
                   >
-                    Get Started Free
-                    <ArrowRight className="w-4 h-4" />
+                    {loadingQuizzes ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Get Started Free
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </Button>
-                </Link>
+                )}
               </div>
             </div>
           </div>
