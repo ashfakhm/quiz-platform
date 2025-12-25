@@ -75,7 +75,6 @@ src/
 ├── components/           # React Components
 │   ├── auth/             # Clerk wrappers & auth logic
 │   ├── quiz/             # Core quiz engine components (QuestionCard, etc.)
-│   ├── three/            # 3D assets & canvas scenes (Lazy loaded)
 │   ├── theme/            # Theme providers & toggles
 │   └── ui/               # Shadcn primitive components
 ├── lib/                  # Utilities, types, API clients
