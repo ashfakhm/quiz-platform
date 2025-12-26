@@ -101,7 +101,7 @@ export default function HistoryPage() {
               attempts.map((attempt) => (
                 <article
                   key={attempt.attemptId}
-                  className="p-5 flex items-center justify-between hover:bg-white/60 dark:hover:bg-card/60 transition-colors group"
+                  className="p-5 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/60 dark:hover:bg-card/60 transition-colors group gap-2"
                   aria-label={`Attempt for ${attempt.quizTitle}`}
                 >
                   <div className="space-y-1">
@@ -125,6 +125,35 @@ export default function HistoryPage() {
                       <span className="capitalize">{attempt.mode} Mode</span>
                     </div>
                   </div>
+                  <div className="flex flex-wrap gap-3 items-center text-xs text-muted-foreground">
+                    <span>
+                      Attempted: <b>{attempt.attempted}</b>
+                    </span>
+                    <span>
+                      Correct:{" "}
+                      <b className="text-emerald-600 dark:text-emerald-400">
+                        {attempt.correct}
+                      </b>
+                    </span>
+                    <span>
+                      Incorrect:{" "}
+                      <b className="text-rose-600 dark:text-rose-400">
+                        {attempt.incorrect}
+                      </b>
+                    </span>
+                    <span>
+                      Result:{" "}
+                      <b
+                        className={
+                          attempt.result === "Pass"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-rose-600 dark:text-rose-400"
+                        }
+                      >
+                        {attempt.result}
+                      </b>
+                    </span>
+                  </div>
                   <div className="text-right">
                     <div className="font-bold text-lg">
                       {attempt.score > 0 ? "+" : ""}
@@ -136,15 +165,12 @@ export default function HistoryPage() {
                     <Badge
                       variant="secondary"
                       className={`mt-1 text-[10px] uppercase tracking-wider ${
-                        attempt.score / attempt.totalQuestions >= 0.6
+                        attempt.result === "Pass"
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                           : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
                       }`}
                     >
-                      {((attempt.score / attempt.totalQuestions) * 100).toFixed(
-                        0
-                      )}
-                      %
+                      {attempt.result}
                     </Badge>
                   </div>
                 </article>

@@ -6,7 +6,7 @@ export interface Question {
   question: string;
   options: [string, string, string, string];
   correctIndex: number;
-  explanation: { format: 'markdown' | 'text'; content: string };
+  explanation: { format: "markdown" | "text"; content: string };
   context?: string;
   groupId?: string;
 }
@@ -19,10 +19,15 @@ export interface QuizResponse {
 }
 
 // Quiz modes
-export type QuizMode = 'study' | 'exam';
+export type QuizMode = "study" | "exam";
 
 // Quiz phases
-export type QuizPhase = 'idle' | 'selecting-mode' | 'in-progress' | 'submitted' | 'review';
+export type QuizPhase =
+  | "idle"
+  | "selecting-mode"
+  | "in-progress"
+  | "submitted"
+  | "review";
 
 // Answer state for a single question
 export interface AnswerState {
@@ -50,6 +55,10 @@ export interface AttemptSubmission {
   answers: Record<string, number>;
   score: number;
   totalQuestions: number;
+  attempted: number;
+  correct: number;
+  incorrect: number;
+  result: "Pass" | "Fail";
   startTime: string;
   endTime: string;
 }
@@ -61,6 +70,10 @@ export interface AttemptSummary {
   quizTitle: string;
   score: number;
   totalQuestions: number;
+  attempted: number;
+  correct: number;
+  incorrect: number;
+  result: "Pass" | "Fail";
   completedAt: string;
   mode: QuizMode;
 }

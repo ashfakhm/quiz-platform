@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IQuestion extends Document {
   id: string;
@@ -6,14 +6,22 @@ export interface IQuestion extends Document {
   options: string[];
   correctIndex: number;
   explanation: {
-    format: 'markdown' | 'text';
+    format: "markdown" | "text";
     content: string;
   };
+  mark?: number; // Mark for this question (1-10, default 1)
   context?: string;
   groupId?: string;
 }
 
 const QuestionSchema = new Schema<IQuestion>({
+  mark: {
+    type: Number,
+    min: 1,
+    max: 10,
+    default: 1,
+    required: false,
+  },
   id: {
     type: String,
     required: true,
@@ -28,7 +36,7 @@ const QuestionSchema = new Schema<IQuestion>({
     required: true,
     validate: {
       validator: (options: string[]) => options.length >= 2,
-      message: 'Question must have at least 2 options',
+      message: "Question must have at least 2 options",
     },
   },
   correctIndex: {
@@ -39,8 +47,8 @@ const QuestionSchema = new Schema<IQuestion>({
   explanation: {
     format: {
       type: String,
-      enum: ['markdown', 'text'],
-      default: 'markdown',
+      enum: ["markdown", "text"],
+      default: "markdown",
     },
     content: {
       type: String,
@@ -58,5 +66,6 @@ const QuestionSchema = new Schema<IQuestion>({
 });
 
 // Prevent re-compilation during development
-export const Question = mongoose.models.Question || mongoose.model<IQuestion>('Question', QuestionSchema);
-
+export const Question =
+  mongoose.models.Question ||
+  mongoose.model<IQuestion>("Question", QuestionSchema);

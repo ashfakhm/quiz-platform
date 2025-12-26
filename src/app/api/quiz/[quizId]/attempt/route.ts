@@ -94,17 +94,30 @@ export async function POST(
 
     const answersArray = answerValidation.sanitized!;
 
-    // Calculate score - only count answered questions
+    // Calculate score and stats with per-question mark and negative marking
     let score = 0;
+    let attempted = 0;
+    let correct = 0;
+    let incorrect = 0;
     const answerDetails = answersArray.map(
       (answer: { questionId: string; selectedIndex: number }) => {
         const question = questions.find((q) => q.id === answer.questionId);
+        const mark = question?.mark ?? 1;
         const isCorrect = question?.correctIndex === answer.selectedIndex;
 
+        if (
+          answer.selectedIndex !== undefined &&
+          answer.selectedIndex !== null
+        ) {
+          attempted++;
+        }
         if (isCorrect) {
-          score++;
+          score += mark;
+          correct++;
         } else {
-          score--; // Negative marking for incorrect answers
+          // Negative marking: 0.25% of the mark for this question
+          score -= mark * 0.0025;
+          incorrect++;
         }
 
         return {
@@ -114,6 +127,11 @@ export async function POST(
         };
       }
     );
+
+    // Determine result (Pass/Fail) - for now, pass if >= 40% correct
+    const passPercentage = 0.4;
+    const result =
+      correct / questions.length >= passPercentage ? "Pass" : "Fail";
 
     // Create attempt
     const attemptId = `attempt-${Date.now()}-${Math.random()
@@ -128,6 +146,10 @@ export async function POST(
       answers: answerDetails,
       score,
       totalQuestions: questions.length,
+      attempted,
+      correct,
+      incorrect,
+      result,
       completedAt: new Date(),
     });
 
@@ -142,6 +164,10 @@ export async function POST(
         saved: true,
         score,
         totalQuestions: questions.length,
+        attempted,
+        correct,
+        incorrect,
+        result,
       }),
       {
         status: 200,

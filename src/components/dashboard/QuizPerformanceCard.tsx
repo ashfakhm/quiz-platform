@@ -10,6 +10,10 @@ interface QuizPerformanceCardProps {
   bestScore: number;
   latestScore: number;
   totalQuestions: number;
+  attempted?: number;
+  correct?: number;
+  incorrect?: number;
+  result?: "Pass" | "Fail" | null;
 }
 
 export function QuizPerformanceCard({
@@ -18,6 +22,10 @@ export function QuizPerformanceCard({
   bestScore,
   latestScore,
   totalQuestions,
+  attempted,
+  correct,
+  incorrect,
+  result,
 }: QuizPerformanceCardProps) {
   const maxScore = totalQuestions;
   const displayPercentage = Math.round((bestScore / maxScore) * 100);
@@ -65,6 +73,47 @@ export function QuizPerformanceCard({
       </header>
 
       <section className="relative space-y-5">
+        {/* Detailed Stats */}
+        {(attempted !== undefined ||
+          correct !== undefined ||
+          incorrect !== undefined ||
+          result) && (
+          <div className="flex flex-wrap gap-4 items-center text-xs text-muted-foreground mb-2">
+            {attempted !== undefined && (
+              <span>
+                Attempted: <b>{attempted}</b>
+              </span>
+            )}
+            {correct !== undefined && (
+              <span>
+                Correct:{" "}
+                <b className="text-emerald-600 dark:text-emerald-400">
+                  {correct}
+                </b>
+              </span>
+            )}
+            {incorrect !== undefined && (
+              <span>
+                Incorrect:{" "}
+                <b className="text-rose-600 dark:text-rose-400">{incorrect}</b>
+              </span>
+            )}
+            {result && (
+              <span>
+                Result:{" "}
+                <b
+                  className={
+                    result === "Pass"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400"
+                  }
+                >
+                  {result}
+                </b>
+              </span>
+            )}
+          </div>
+        )}
         {/* Main Metric */}
         <div className="flex items-end justify-between">
           <div>

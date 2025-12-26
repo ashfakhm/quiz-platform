@@ -1,11 +1,11 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IAttempt extends Document {
   attemptId: string;
   userId: string;
   quizId: string;
   quizTitle: string;
-  mode: 'study' | 'exam';
+  mode: "study" | "exam";
   answers: Array<{
     questionId: string;
     selectedIndex: number;
@@ -13,6 +13,10 @@ export interface IAttempt extends Document {
   }>;
   score: number;
   totalQuestions: number;
+  attempted: number; // Number of questions attempted
+  correct: number; // Number of correct answers
+  incorrect: number; // Number of incorrect answers
+  result: "Pass" | "Fail"; // Pass/Fail result
   completedAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -42,7 +46,7 @@ const AttemptSchema = new Schema<IAttempt>(
     },
     mode: {
       type: String,
-      enum: ['study', 'exam'],
+      enum: ["study", "exam"],
       required: true,
     },
     answers: [
@@ -62,6 +66,26 @@ const AttemptSchema = new Schema<IAttempt>(
       required: true,
       min: 1,
     },
+    attempted: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    correct: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    incorrect: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    result: {
+      type: String,
+      enum: ["Pass", "Fail"],
+      required: true,
+    },
     completedAt: {
       type: Date,
       required: true,
@@ -78,5 +102,5 @@ AttemptSchema.index({ userId: 1, completedAt: -1 });
 AttemptSchema.index({ quizId: 1 });
 
 // Prevent re-compilation during development
-export const Attempt = mongoose.models.Attempt || mongoose.model<IAttempt>('Attempt', AttemptSchema);
-
+export const Attempt =
+  mongoose.models.Attempt || mongoose.model<IAttempt>("Attempt", AttemptSchema);

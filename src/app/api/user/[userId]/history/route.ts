@@ -61,6 +61,10 @@ export async function GET(
       mode: attempt.mode,
       score: attempt.score,
       totalQuestions: attempt.totalQuestions,
+      attempted: attempt.attempted ?? attempt.totalQuestions, // fallback for legacy
+      correct: attempt.correct ?? null,
+      incorrect: attempt.incorrect ?? null,
+      result: attempt.result ?? null,
       completedAt:
         attempt.completedAt instanceof Date
           ? attempt.completedAt.toISOString()

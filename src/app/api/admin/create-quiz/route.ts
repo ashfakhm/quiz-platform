@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import connectDB from '@/lib/db/mongodb';
-import { Quiz } from '@/lib/models/Quiz';
-import { Question } from '@/lib/models/Question';
-import { isAdmin } from '@/lib/utils/admin-server';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import connectDB from "@/lib/db/mongodb";
+import { Quiz } from "@/lib/models/Quiz";
+import { Question } from "@/lib/models/Question";
+import { isAdmin } from "@/lib/utils/admin-server";
 import {
   validateQuizId,
   validateQuizTitle,
@@ -14,23 +14,20 @@ import {
   validateOptions,
   validateCorrectIndex,
   validateQuestionsArray,
-} from '@/lib/utils/security';
+} from "@/lib/utils/security";
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
     const adminStatus = await isAdmin();
     if (!adminStatus) {
       return NextResponse.json(
-        { error: 'Forbidden: Only administrators can create quizzes' },
+        { error: "Forbidden: Only administrators can create quizzes" },
         { status: 403 }
       );
     }
@@ -60,7 +57,7 @@ export async function POST(request: NextRequest) {
     const descValidation = validateQuizDescription(description);
     if (!descValidation.valid) {
       return NextResponse.json(
-        { error: 'Invalid description format' },
+        { error: "Invalid description format" },
         { status: 400 }
       );
     }
@@ -68,7 +65,7 @@ export async function POST(request: NextRequest) {
     // Validate questions array
     if (!questions || !Array.isArray(questions)) {
       return NextResponse.json(
-        { error: 'Questions must be an array' },
+        { error: "Questions must be an array" },
         { status: 400 }
       );
     }
@@ -87,7 +84,7 @@ export async function POST(request: NextRequest) {
     const existingQuiz = await Quiz.findOne({ quizId });
     if (existingQuiz) {
       return NextResponse.json(
-        { error: 'Quiz ID already exists. Please choose a different ID.' },
+        { error: "Quiz ID already exists. Please choose a different ID." },
         { status: 400 }
       );
     }
@@ -100,7 +97,7 @@ export async function POST(request: NextRequest) {
       const qIdValidation = validateQuestionId(q.id);
       if (!qIdValidation.valid) {
         return NextResponse.json(
-          { error: qIdValidation.error || 'Invalid question ID' },
+          { error: qIdValidation.error || "Invalid question ID" },
           { status: 400 }
         );
       }
@@ -114,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     if (duplicateIds.length > 0) {
       return NextResponse.json(
-        { error: `Duplicate question IDs found: ${duplicateIds.join(', ')}` },
+        { error: `Duplicate question IDs found: ${duplicateIds.join(", ")}` },
         { status: 400 }
       );
     }
@@ -122,7 +119,7 @@ export async function POST(request: NextRequest) {
     // Validate and prepare questions
     const questionDocs = [];
     const questionIdsToUpdate: string[] = [];
-    
+
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       const sanitizedId = q.id.trim();
@@ -158,29 +155,51 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate explanation
-      const explanation = q.explanation || { format: 'markdown', content: '' };
-      if (typeof explanation !== 'object' || !explanation.content) {
+      const explanation = q.explanation || { format: "markdown", content: "" };
+      if (typeof explanation !== "object" || !explanation.content) {
         return NextResponse.json(
           { error: `Question ${i + 1}: Explanation is required` },
           { status: 400 }
         );
       }
 
+      // Validate mark (1-10, default 1)
+      let mark = 1;
+      if (q.mark !== undefined) {
+        if (
+          typeof q.mark !== "number" ||
+          isNaN(q.mark) ||
+          q.mark < 1 ||
+          q.mark > 10
+        ) {
+          return NextResponse.json(
+            {
+              error: `Question ${
+                i + 1
+              }: Mark must be a number between 1 and 10`,
+            },
+            { status: 400 }
+          );
+        }
+        mark = q.mark;
+      }
+
       // Check if question ID already exists in database
       const existingQuestion = await Question.findOne({ id: sanitizedId });
-      
+
       if (existingQuestion) {
         // Update existing question instead of creating new one
         existingQuestion.question = questionTextValidation.sanitized!;
         existingQuestion.options = optionsValidation.sanitized!;
         existingQuestion.correctIndex = q.correctIndex ?? 0;
         existingQuestion.explanation = {
-          format: explanation.format === 'text' ? 'text' : 'markdown',
+          format: explanation.format === "text" ? "text" : "markdown",
           content: String(explanation.content).slice(0, 5000),
         };
+        existingQuestion.mark = mark;
         if (q.context) existingQuestion.context = q.context;
         if (q.groupId) existingQuestion.groupId = q.groupId;
-        
+
         await existingQuestion.save();
         questionIdsToUpdate.push(sanitizedId);
       } else {
@@ -191,9 +210,10 @@ export async function POST(request: NextRequest) {
           options: optionsValidation.sanitized!,
           correctIndex: q.correctIndex ?? 0,
           explanation: {
-            format: explanation.format === 'text' ? 'text' : 'markdown',
+            format: explanation.format === "text" ? "text" : "markdown",
             content: String(explanation.content).slice(0, 5000),
           },
+          mark,
           context: q.context,
           groupId: q.groupId,
         });
@@ -216,7 +236,7 @@ export async function POST(request: NextRequest) {
     const quiz = new Quiz({
       quizId: quizId.trim(),
       title: titleValidation.sanitized!,
-      description: descValidation.sanitized || '',
+      description: descValidation.sanitized || "",
       questionIds: allQuestionIds,
     });
 
@@ -231,11 +251,10 @@ export async function POST(request: NextRequest) {
       updatedQuestions: questionIdsToUpdate.length,
     });
   } catch (error: any) {
-    console.error('Error creating quiz:', error);
+    console.error("Error creating quiz:", error);
     return NextResponse.json(
-      { error: error.message || 'Failed to create quiz' },
+      { error: error.message || "Failed to create quiz" },
       { status: 500 }
     );
   }
 }
-

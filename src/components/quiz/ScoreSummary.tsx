@@ -7,18 +7,32 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+import type { Question } from "@/lib/types";
+
 interface ScoreSummaryProps {
-  score: number;
+  score: number; // net score (may be negative)
   totalQuestions: number;
   onRestart: () => void;
+  questions?: Question[];
+  answers?: Map<string, number>;
 }
 
 export function ScoreSummary({
   score,
   totalQuestions,
   onRestart,
+  questions,
+  answers,
 }: ScoreSummaryProps) {
-  const percentage = Math.round((score / totalQuestions) * 100);
+  // Calculate number of correct answers if questions/answers provided
+  let correctCount = score;
+  if (questions && answers) {
+    correctCount = questions.reduce((acc, q) => {
+      const selected = answers.get(q.id);
+      return acc + (selected === q.correctIndex ? 1 : 0);
+    }, 0);
+  }
+  const percentage = Math.round((correctCount / totalQuestions) * 100);
 
   // Determine colors based on percentage
   const getColors = () => {
@@ -88,7 +102,7 @@ export function ScoreSummary({
         <div className="flex items-center justify-center gap-8 mb-8">
           <div className="text-center">
             <div className="text-5xl md:text-6xl font-bold mb-2 dark:text-white">
-              <span className={color}>{score}</span>
+              <span className={color}>{correctCount}</span>
               <span className="text-muted-foreground dark:text-gray-400">
                 /{totalQuestions}
               </span>
