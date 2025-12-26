@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import {
@@ -10,6 +11,7 @@ import {
   Lock,
   CheckCircle,
   RotateCcw,
+  LayoutDashboard,
 } from "lucide-react";
 import type { QuizMode, QuizPhase } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -100,6 +102,14 @@ export function ProgressHeader({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
+          {/* Dashboard Link */}
+          <Link href="/dashboard" className="hidden sm:inline-flex">
+            <Button variant="ghost" size="sm" className="gap-1.5">
+              <LayoutDashboard className="w-4 h-4" />
+              <span className="hidden lg:inline">Dashboard</span>
+            </Button>
+          </Link>
+
           {/* Reset button */}
           {phase !== "idle" && phase !== "selecting-mode" && onReset && (
             <Button
