@@ -466,22 +466,20 @@ export default function QuizPage({ params }: QuizPageProps) {
           </Alert>
         </section>
       )}
-      {/* Progress Header */}
-      <header>
-        <ProgressHeader
-          quizTitle={quizData?.title || "Quiz"}
-          mode={mode}
-          phase={phase}
-          answeredCount={answeredCount}
-          totalQuestions={questions.length}
-          isModeLocked={isModeLocked}
-          onSubmit={handleSubmit}
-          onReset={handleReset}
-          canSubmit={true} // Allow submission even with 0 answers
-          startTime={state.startTime}
-          examDuration={examDuration}
-        />
-      </header>
+      {/* Progress Header - sticky at top, not wrapped in <header> */}
+      <ProgressHeader
+        quizTitle={quizData?.title || "Quiz"}
+        mode={mode}
+        phase={phase}
+        answeredCount={answeredCount}
+        totalQuestions={questions.length}
+        isModeLocked={isModeLocked}
+        onSubmit={handleSubmit}
+        onReset={handleReset}
+        canSubmit={true} // Allow submission even with 0 answers
+        startTime={state.startTime}
+        examDuration={examDuration}
+      />
 
       {/* Main Content */}
       {/* ARIA live region for timer/errors */}
