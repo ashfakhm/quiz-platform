@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import { useUser, useOrganization } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { checkAdminStatus } from "@/lib/utils/admin";
@@ -134,9 +135,9 @@ export default function QuizzesManagementPage() {
   useEffect(() => {
     if (!isLoaded || checkingAdmin) return;
     if (!isSignedIn) {
-      router.replace("/401");
+      router.replace("/401" as Route);
     } else if (!isAdmin) {
-      router.replace("/403");
+      router.replace("/403" as Route);
     }
   }, [isLoaded, checkingAdmin, isSignedIn, isAdmin, router]);
 
@@ -145,10 +146,10 @@ export default function QuizzesManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
+    <main className="min-h-screen bg-background p-4 md:p-8">
+      <section className="max-w-6xl mx-auto">
         {/* Back Button */}
-        <div className="mb-4">
+        <nav className="mb-4" aria-label="Back navigation">
           <Link href="/dashboard">
             <Button variant="ghost" size="sm" className="gap-2 text-sm">
               <ArrowLeft className="h-4 w-4" />
@@ -156,10 +157,10 @@ export default function QuizzesManagementPage() {
               <span className="sm:hidden">Back</span>
             </Button>
           </Link>
-        </div>
+        </nav>
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
               Quiz Management
@@ -175,7 +176,7 @@ export default function QuizzesManagementPage() {
               <span className="sm:hidden">New Quiz</span>
             </Button>
           </Link>
-        </div>
+        </header>
 
         {/* Error Alert */}
         {error && (
@@ -204,7 +205,7 @@ export default function QuizzesManagementPage() {
           </Card>
         ) : (
           /* Quiz List */
-          <div className="grid gap-6 grid-cols-1">
+          <section className="grid gap-6 grid-cols-1" aria-label="Quiz list">
             {quizzes.map((quiz) => (
               <Card
                 key={quiz.quizId}
@@ -264,7 +265,7 @@ export default function QuizzesManagementPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </section>
         )}
 
         {/* Delete Confirmation Dialog */}
@@ -311,7 +312,7 @@ export default function QuizzesManagementPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -18,7 +16,7 @@ import {
   ArrowLeft,
   Sparkles,
   History,
-  LayoutDashboard
+  LayoutDashboard,
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import type { AttemptSummary } from "@/lib/types";
@@ -28,7 +26,14 @@ export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [attempts, setAttempts] = useState<AttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quizzes, setQuizzes] = useState<Array<{ quizId: string; title: string; description: string; questionCount: number }>>([]);
+  const [quizzes, setQuizzes] = useState<
+    Array<{
+      quizId: string;
+      title: string;
+      description: string;
+      questionCount: number;
+    }>
+  >([]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -86,8 +91,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="p-8 text-center max-w-sm w-full border-border/50 bg-card/60 backdrop-blur-xl">
-          <p className="mb-6 text-muted-foreground">Please sign in to access your dashboard.</p>
-          <Link href="/sign-in">
+          <p className="mb-6 text-muted-foreground">
+            Please sign in to access your dashboard.
+          </p>
+          <Link href={"/sign-in" as Route}>
             <Button className="w-full">Sign In</Button>
           </Link>
         </Card>
@@ -113,8 +120,11 @@ export default function DashboardPage() {
       };
     }
     acc[attempt.quizId].attempts.push(attempt);
-    if (new Date(attempt.completedAt) > new Date(acc[attempt.quizId].attempts[0]?.completedAt || 0)) {
-         acc[attempt.quizId].totalQuestions = attempt.totalQuestions;
+    if (
+      new Date(attempt.completedAt) >
+      new Date(acc[attempt.quizId].attempts[0]?.completedAt || 0)
+    ) {
+      acc[attempt.quizId].totalQuestions = attempt.totalQuestions;
     }
     return acc;
   }, {} as Record<string, { quizTitle: string; attempts: AttemptSummary[]; totalQuestions: number }>);
@@ -129,207 +139,288 @@ export default function DashboardPage() {
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
   };
 
   return (
-    <div className="min-h-screen relative">
+    <main className="min-h-screen relative" aria-label="Dashboard">
       {/* Background provided by layout */}
 
       {/* Header */}
-
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />
-                <span className="sr-only">Back to home</span>
-              </Button>
-            </Link>
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/30 transition-shadow">
-                <span className="text-white font-bold text-sm">Q</span>
-              </div>
-              <span className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">QuizMaster</span>
-            </Link>
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
+        <nav aria-label="Dashboard navigation">
+          <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
+            <div className="flex items-center gap-3">
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="sr-only">Back to home</span>
+                </Button>
+              </Link>
+              <Link href="/" className="flex items-center gap-2.5 group">
+                <span className="w-8 h-8 rounded-xl bg-linear-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/30 transition-shadow">
+                  <span className="text-white font-bold text-sm">Q</span>
+                </span>
+                <span className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
+                  QuizMaster
+                </span>
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9 ring-2 ring-primary/20",
+                  },
+                }}
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <UserButton 
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "h-9 w-9 ring-2 ring-primary/20",
-                },
-              }}
-            />
-          </div>
-        </div>
+        </nav>
       </header>
 
       {/* Main Content */}
-      <motion.main
+      <motion.section
         className="container max-w-7xl px-4 md:px-8 py-12 mx-auto relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
+        aria-label="Dashboard main content"
       >
         {/* Welcome Section */}
-        <motion.div variants={itemVariants} className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <motion.section
+          variants={itemVariants}
+          className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6"
+          aria-label="Welcome section"
+        >
           <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70">
               Welcome back, {user?.firstName || "User"}
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Track your progress and master new skills. You&apos;ve completed <span className="text-primary font-semibold">{attempts.length}</span> sessions so far.
+              Track your progress and master new skills. You&apos;ve completed{" "}
+              <span className="text-primary font-semibold">
+                {attempts.length}
+              </span>{" "}
+              sessions so far.
             </p>
           </div>
           {quizzes.length > 0 && (
-             <Button 
-                size="lg" 
-                onClick={handleStartQuiz} 
-                className="h-12 px-8 rounded-full shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-blue-600 hover:opacity-90 transition-all hover:scale-105 active:scale-95"
-              >
-                Start New Quiz <ArrowRight className="ml-2 w-4 h-4" />
-             </Button>
+            <Button
+              size="lg"
+              onClick={handleStartQuiz}
+              className="h-12 px-8 rounded-full shadow-lg shadow-primary/25 bg-linear-to-r from-primary to-blue-600 hover:opacity-90 transition-all hover:scale-105 active:scale-95"
+            >
+              Start New Quiz <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
           )}
-        </motion.div>
+        </motion.section>
 
-        
         {/* Available Quizzes - Hero Card */}
         {quizzes.length > 0 && (
-          <motion.div variants={itemVariants} className="mb-16">
-            <div className="flex items-center gap-2 mb-6">
-               <Sparkles className="w-5 h-5 text-amber-500" />
-               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Recommended for you</h2>
-            </div>
-            
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-2xl dark:shadow-none dark:from-card dark:to-card/50 dark:border dark:border-white/10">
-               {/* Decorative Circles */}
-              <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl whitespace-nowrap" />
+          <motion.section
+            variants={itemVariants}
+            className="mb-16"
+            aria-label="Available quizzes"
+          >
+            <header className="flex items-center gap-2 mb-6">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                Recommended for you
+              </h2>
+            </header>
+
+            <Card className="relative overflow-hidden border-0 bg-linear-to-br from-gray-900 to-gray-800 text-white shadow-2xl dark:shadow-none dark:from-card dark:to-card/50 dark:border dark:border-white/10">
+              {/* Decorative Circles */}
+              <span className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
+              <span className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl whitespace-nowrap" />
 
               <CardContent className="relative p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 max-w-2xl">
                   <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md px-3 py-1 text-xs uppercase tracking-wider">
-                     Featured
+                    Featured
                   </Badge>
                   <h3 className="text-3xl font-bold">
-                    {quizzes.length === 1 ? quizzes[0].title : "Explore Our Quiz Library"}
+                    {quizzes.length === 1
+                      ? quizzes[0].title
+                      : "Explore Our Quiz Library"}
                   </h3>
                   <p className="text-gray-300 text-lg leading-relaxed">
-                    {quizzes.length === 1 
-                      ? (quizzes[0].description || "Test your knowledge and improve your skills with this comprehensive assessment.")
+                    {quizzes.length === 1
+                      ? quizzes[0].description ||
+                        "Test your knowledge and improve your skills with this comprehensive assessment."
                       : "Choose from a variety of quizzes designed to help you master new concepts."}
                   </p>
                   <div className="flex flex-wrap gap-3 pt-2">
-                     {quizzes.length === 1 && (
-                       <>
-                        <Badge variant="outline" className="border-white/20 text-white/80">{quizzes[0].questionCount} Questions</Badge>
-                        <Badge variant="outline" className="border-white/20 text-white/80">Study & Exam Modes</Badge>
-                       </>
-                     )}
+                    {quizzes.length === 1 && (
+                      <>
+                        <Badge
+                          variant="outline"
+                          className="border-white/20 text-white/80"
+                        >
+                          {quizzes[0].questionCount} Questions
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-white/20 text-white/80"
+                        >
+                          Study & Exam Modes
+                        </Badge>
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                <div className="shrink-0">
+                  <span className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
                     <BookOpen className="w-8 h-8 text-white" />
-                  </div>
+                  </span>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </motion.section>
         )}
-        
+
         {/* Per-Quiz Performance Section */}
         {Object.keys(quizStats).length > 0 && (
-          <motion.div variants={itemVariants} className="mb-16">
-            <div className="flex items-center gap-2 mb-6">
-               <LayoutDashboard className="w-5 h-5 text-primary" />
-               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Performance Overview</h2>
-            </div>
-            <div className="grid gap-6 grid-cols-1">
+          <motion.section
+            variants={itemVariants}
+            className="mb-16"
+            aria-label="Performance overview"
+          >
+            <header className="flex items-center gap-2 mb-6">
+              <LayoutDashboard className="w-5 h-5 text-primary" />
+              <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                Performance Overview
+              </h2>
+            </header>
+            <ul className="grid gap-6 grid-cols-1">
               {Object.values(quizStats).map((quizGroup) => {
                 const sortedAttempts = [...quizGroup.attempts].sort(
-                  (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+                  (a, b) =>
+                    new Date(b.completedAt).getTime() -
+                    new Date(a.completedAt).getTime()
                 );
                 const latest = sortedAttempts[0];
-                const bestScore = Math.max(...quizGroup.attempts.map(a => a.score));
+                const bestScore = Math.max(
+                  ...quizGroup.attempts.map((a) => a.score)
+                );
 
                 return (
-                  <QuizPerformanceCard
-                    key={latest.quizId}
-                    quizTitle={quizGroup.quizTitle}
-                    totalAttempts={quizGroup.attempts.length}
-                    bestScore={bestScore}
-                    latestScore={latest.score}
-                    totalQuestions={quizGroup.totalQuestions}
-                  />
+                  <li key={latest.quizId}>
+                    <QuizPerformanceCard
+                      quizTitle={quizGroup.quizTitle}
+                      totalAttempts={quizGroup.attempts.length}
+                      bestScore={bestScore}
+                      latestScore={latest.score}
+                      totalQuestions={quizGroup.totalQuestions}
+                    />
+                  </li>
                 );
               })}
-            </div>
-          </motion.div>
+            </ul>
+          </motion.section>
         )}
 
         {/* Recent Attempts List */}
-         <motion.div variants={itemVariants}>
-            <div className="flex items-center gap-2 mb-6">
-               <History className="w-5 h-5 text-primary" />
-               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Recent Activity</h2>
+        <motion.section variants={itemVariants} aria-label="Recent activity">
+          <header className="flex items-center gap-2 mb-6">
+            <History className="w-5 h-5 text-primary" />
+            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+              Recent Activity
+            </h2>
+          </header>
+
+          <Card className="border-border/50 bg-white/50 dark:bg-card/40 backdrop-blur-sm overflow-hidden shadow-sm dark:shadow-none">
+            <div className="divide-y divide-border/50">
+              {attempts.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground">
+                  No activity yet. Start a quiz to see your history here.
+                </div>
+              ) : (
+                <ul>
+                  {attempts.slice(0, 5).map((attempt) => (
+                    <li key={attempt.attemptId}>
+                      <article
+                        className="p-5 flex items-center justify-between hover:bg-white/60 dark:hover:bg-card/60 transition-colors group"
+                        aria-label={`Attempt for ${attempt.quizTitle}`}
+                      >
+                        <div className="space-y-1">
+                          <div className="font-semibold group-hover:text-primary transition-colors">
+                            {attempt.quizTitle}
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            <span>
+                              {new Date(attempt.completedAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                            <span className="w-1 h-1 rounded-full bg-border" />
+                            <span className="capitalize">
+                              {attempt.mode} Mode
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-lg">
+                            {attempt.score > 0 ? "+" : ""}
+                            {attempt.score}
+                            <span className="text-sm font-normal text-muted-foreground ml-1">
+                              / {attempt.totalQuestions}
+                            </span>
+                          </div>
+                          <Badge
+                            variant="secondary"
+                            className={`mt-1 text-[10px] uppercase tracking-wider ${
+                              attempt.score / attempt.totalQuestions >= 0.6
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                            }`}
+                          >
+                            {(
+                              (attempt.score / attempt.totalQuestions) *
+                              100
+                            ).toFixed(0)}
+                            %
+                          </Badge>
+                        </div>
+                      </article>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-
-            <Card className="border-border/50 bg-white/50 dark:bg-card/40 backdrop-blur-sm overflow-hidden shadow-sm dark:shadow-none">
-               <div className="divide-y divide-border/50">
-                  {attempts.length === 0 ? (
-                    <div className="p-12 text-center text-muted-foreground">
-                       No activity yet. Start a quiz to see your history here.
-                    </div>
-                  ) : (
-                    attempts.slice(0, 5).map((attempt) => (
-                       <div key={attempt.attemptId} className="p-5 flex items-center justify-between hover:bg-white/60 dark:hover:bg-card/60 transition-colors group">
-                          <div className="space-y-1">
-                             <div className="font-semibold group-hover:text-primary transition-colors">{attempt.quizTitle}</div>
-                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                <span>{new Date(attempt.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                <span className="w-1 h-1 rounded-full bg-border" />
-                                <span className="capitalize">{attempt.mode} Mode</span>
-                             </div>
-                          </div>
-                          <div className="text-right">
-                             <div className="font-bold text-lg">
-                                {attempt.score > 0 ? "+" : ""}{attempt.score}
-                                <span className="text-sm font-normal text-muted-foreground ml-1">/ {attempt.totalQuestions}</span>
-                             </div>
-                             <Badge 
-                                variant="secondary" 
-                                className={`mt-1 text-[10px] uppercase tracking-wider ${
-                                   (attempt.score / attempt.totalQuestions) >= 0.6 
-                                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
-                                   : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
-                                }`}
-                             >
-                                {(attempt.score / attempt.totalQuestions * 100).toFixed(0)}%
-                             </Badge>
-                          </div>
-                       </div>
-                    ))
-                  )}
-               </div>
-               {attempts.length > 5 && (
-                  <div className="p-4 border-t border-border/50 text-center">
-                      <Link href="/dashboard/history">
-                         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                            View All Activity
-                         </Button>
-                      </Link>
-                  </div>
-               )}
-            </Card>
-         </motion.div>
-
-      </motion.main>
-    </div>
+            {attempts.length > 5 && (
+              <div className="p-4 border-t border-border/50 text-center">
+                <Link href="/dashboard/history">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    View All Activity
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </Card>
+        </motion.section>
+      </motion.section>
+    </main>
   );
 }

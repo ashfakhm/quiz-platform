@@ -80,20 +80,29 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50/50 dark:bg-background selection:bg-primary/20 relative`}
         >
           {/* Global Background Decor */}
-          <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          <aside
+            className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
+            aria-hidden="true"
+          >
             <div className="hidden dark:block absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
             <div className="hidden dark:block absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px]" />
-          </div>
-          
+          </aside>
+
           {/* Skip to main content link for accessibility */}
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only absolute top-2 left-2 z-50 rounded bg-primary px-4 py-2 text-primary-foreground shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-ring"
-            tabIndex={0}
+          <nav aria-label="Skip to main content">
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only absolute top-2 left-2 z-50 rounded bg-primary px-4 py-2 text-primary-foreground shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+              tabIndex={0}
+            >
+              Skip to main content
+            </a>
+          </nav>
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="focus:outline-none relative z-10 w-full h-full"
           >
-            Skip to main content
-          </a>
-          <main id="main-content" tabIndex={-1} className="focus:outline-none relative z-10 w-full h-full">
             <ThemeProvider
               defaultTheme="system"
               storageKey="quiz-platform-theme"

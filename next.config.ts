@@ -1,10 +1,40 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  poweredByHeader: false,
+  compress: true,
+  trailingSlash: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+    formats: ["image/webp"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+      },
+    ];
+  },
+  experimental: {
+    serverActions: {},
+    serverMinification: true,
+    serverSourceMaps: false,
+    optimizePackageImports: ["lodash", "date-fns"],
+  },
+  typedRoutes: true,
   typescript: {
-    // Ignore TypeScript errors during build (we'll handle them separately)
-    // Set to false if you want to fail builds on TypeScript errors
     ignoreBuildErrors: false,
   },
 };

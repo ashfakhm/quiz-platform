@@ -1,33 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import connectDB from '@/lib/db/mongodb';
-import { Quiz } from '@/lib/models/Quiz';
-import { Question } from '@/lib/models/Question';
-import { Attempt } from '@/lib/models/Attempt';
-import { validateQuizId, validateAnswerSubmission, validateMode } from '@/lib/utils/security';
+// Next.js 16.1: Use native Request/Response Web APIs
+import { auth } from "@clerk/nextjs/server";
+import connectDB from "@/lib/db/mongodb";
+import { Quiz } from "@/lib/models/Quiz";
+import { Question } from "@/lib/models/Question";
+import { Attempt } from "@/lib/models/Attempt";
+import {
+  validateQuizId,
+  validateAnswerSubmission,
+  validateMode,
+} from "@/lib/utils/security";
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ quizId: string }> }
+  request: Request,
+  context: { params: Promise<{ quizId: string }> }
 ) {
   try {
     const { userId } = await auth();
     console.log(`[API] Processing attempt submission for user: ${userId}`);
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    const { quizId: rawQuizId } = await params;
-    
+    const { quizId: rawQuizId } = await context.params;
+
     // Validate quiz ID
     const quizIdValidation = validateQuizId(rawQuizId);
     if (!quizIdValidation.valid) {
-      return NextResponse.json(
-        { error: quizIdValidation.error || 'Invalid quiz ID' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: quizIdValidation.error || "Invalid quiz ID" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -37,17 +44,20 @@ export async function POST(
     // Validate mode
     const modeValidation = validateMode(mode);
     if (!modeValidation.valid) {
-      return NextResponse.json(
-        { error: modeValidation.error || 'Invalid mode' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: modeValidation.error || "Invalid mode" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
     if (!answers) {
-      return NextResponse.json(
-        { error: 'Answers are required' },
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: "Answers are required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     await connectDB();
@@ -55,10 +65,10 @@ export async function POST(
     // Fetch quiz and questions to validate answers
     const quiz = await Quiz.findOne({ quizId: rawQuizId.trim() });
     if (!quiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      );
+      return new Response(JSON.stringify({ error: "Quiz not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const questions = await Question.find({
@@ -66,11 +76,19 @@ export async function POST(
     });
 
     // Validate and sanitize answers
-    const answerValidation = validateAnswerSubmission(answers, quiz.questionIds);
+    const answerValidation = validateAnswerSubmission(
+      answers,
+      quiz.questionIds
+    );
     if (!answerValidation.valid) {
-      return NextResponse.json(
-        { error: answerValidation.error || 'Invalid answers format' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({
+          error: answerValidation.error || "Invalid answers format",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -78,25 +96,29 @@ export async function POST(
 
     // Calculate score - only count answered questions
     let score = 0;
-    const answerDetails = answersArray.map((answer: { questionId: string; selectedIndex: number }) => {
-      const question = questions.find((q) => q.id === answer.questionId);
-      const isCorrect = question?.correctIndex === answer.selectedIndex;
-      
-      if (isCorrect) {
-        score++;
-      } else {
-        score--; // Negative marking for incorrect answers
-      }
+    const answerDetails = answersArray.map(
+      (answer: { questionId: string; selectedIndex: number }) => {
+        const question = questions.find((q) => q.id === answer.questionId);
+        const isCorrect = question?.correctIndex === answer.selectedIndex;
 
-      return {
-        questionId: answer.questionId,
-        selectedIndex: answer.selectedIndex,
-        isCorrect: isCorrect || false,
-      };
-    });
+        if (isCorrect) {
+          score++;
+        } else {
+          score--; // Negative marking for incorrect answers
+        }
+
+        return {
+          questionId: answer.questionId,
+          selectedIndex: answer.selectedIndex,
+          isCorrect: isCorrect || false,
+        };
+      }
+    );
 
     // Create attempt
-    const attemptId = `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const attemptId = `attempt-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     const attempt = new Attempt({
       attemptId,
       userId,
@@ -110,20 +132,27 @@ export async function POST(
     });
 
     await attempt.save();
-    console.log(`[API] Attempt saved successfully: ${attempt.attemptId} with score ${score}`);
-
-    return NextResponse.json({
-      attemptId: attempt.attemptId,
-      saved: true,
-      score,
-      totalQuestions: questions.length,
-    });
-  } catch (error) {
-    console.error('Error saving attempt:', error);
-    return NextResponse.json(
-      { error: 'Failed to save attempt' },
-      { status: 500 }
+    console.log(
+      `[API] Attempt saved successfully: ${attempt.attemptId} with score ${score}`
     );
+
+    return new Response(
+      JSON.stringify({
+        attemptId: attempt.attemptId,
+        saved: true,
+        score,
+        totalQuestions: questions.length,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Error saving attempt:", error);
+    return new Response(JSON.stringify({ error: "Failed to save attempt" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
-

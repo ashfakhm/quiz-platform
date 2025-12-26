@@ -31,7 +31,6 @@ function Badge({
   asChild = false,
   role = "status",
   tabIndex = 0,
-  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<"span"> &
   VariantProps<typeof badgeVariants> & {
@@ -47,7 +46,7 @@ function Badge({
       data-slot="badge"
       role={role}
       tabIndex={tabIndex}
-      aria-label={ariaLabel}
+      aria-label={props["aria-label"]}
       className={cn(badgeVariants({ variant }), className)}
       {...props}
     />

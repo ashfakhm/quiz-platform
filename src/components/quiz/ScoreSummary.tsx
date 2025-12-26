@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Trophy, RotateCcw, Home, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,10 +50,11 @@ export function ScoreSummary({
   const { color, bg } = getColors();
 
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
+      aria-label="Quiz score summary"
     >
       <Card
         className={cn(
@@ -74,13 +74,15 @@ export function ScoreSummary({
           </div>
         </div>
 
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
-          Quiz Completed!
-        </h2>
-        <p className="text-muted-foreground mb-8 dark:text-gray-400">
-          Here is your performance summary
-        </p>
+        <header>
+          {/* Title */}
+          <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
+            Quiz Completed!
+          </h2>
+          <p className="text-muted-foreground mb-8 dark:text-gray-400">
+            Here is your performance summary
+          </p>
+        </header>
 
         {/* Score display */}
         <div className="flex items-center justify-center gap-8 mb-8">
@@ -149,6 +151,6 @@ export function ScoreSummary({
           </Link>
         </div>
       </Card>
-    </motion.div>
+    </motion.section>
   );
 }

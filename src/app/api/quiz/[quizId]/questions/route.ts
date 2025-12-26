@@ -1,35 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db/mongodb';
-import { Quiz } from '@/lib/models/Quiz';
-import { Question } from '@/lib/models/Question';
-import { validateQuizId } from '@/lib/utils/security';
+// Next.js 16.1: Use native Request/Response Web APIs
+import connectDB from "@/lib/db/mongodb";
+import { Quiz } from "@/lib/models/Quiz";
+import { Question } from "@/lib/models/Question";
+import { validateQuizId } from "@/lib/utils/security";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ quizId: string }> }
+  request: Request,
+  context: { params: Promise<{ quizId: string }> }
 ) {
   try {
-    const { quizId: rawQuizId } = await params;
-    
+    const { quizId: rawQuizId } = await context.params;
+
     // Validate quiz ID to prevent injection
     const quizIdValidation = validateQuizId(rawQuizId);
     if (!quizIdValidation.valid) {
-      return NextResponse.json(
-        { error: quizIdValidation.error || 'Invalid quiz ID' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: quizIdValidation.error || "Invalid quiz ID" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
     const quizId = rawQuizId.trim();
-    
+
     // Connect to database
     try {
       await connectDB();
     } catch (dbError) {
-      console.error('Database connection error:', dbError);
-      return NextResponse.json(
-        { error: 'Database connection failed', details: process.env.NODE_ENV === 'development' ? String(dbError) : undefined },
-        { status: 500 }
+      console.error("Database connection error:", dbError);
+      return new Response(
+        JSON.stringify({
+          error: "Database connection failed",
+          details:
+            process.env.NODE_ENV === "development"
+              ? String(dbError)
+              : undefined,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -37,13 +49,16 @@ export async function GET(
     const quiz = await Quiz.findOne({ quizId });
     if (!quiz) {
       console.error(`Quiz not found: ${quizId}`);
-      return NextResponse.json(
-        { 
-          error: 'Quiz not found',
+      return new Response(
+        JSON.stringify({
+          error: "Quiz not found",
           quizId,
-          message: `Quiz with ID "${quizId}" does not exist in the database. Please run "npm run seed" to populate the database.`
-        },
-        { status: 404 }
+          message: `Quiz with ID "${quizId}" does not exist in the database. Please run "npm run seed" to populate the database.`,
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -53,14 +68,21 @@ export async function GET(
     });
 
     if (questionsDocs.length === 0) {
-      console.error(`No questions found for quiz: ${quizId}. Question IDs: ${quiz.questionIds.join(', ')}`);
-      return NextResponse.json(
-        { 
-          error: 'No questions found for this quiz',
+      console.error(
+        `No questions found for quiz: ${quizId}. Question IDs: ${quiz.questionIds.join(
+          ", "
+        )}`
+      );
+      return new Response(
+        JSON.stringify({
+          error: "No questions found for this quiz",
           quizId,
-          message: `Quiz "${quizId}" exists but has no questions. Please run "npm run seed" to populate questions.`
-        },
-        { status: 404 }
+          message: `Quiz "${quizId}" exists but has no questions. Please run "npm run seed" to populate questions.`,
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -76,21 +98,29 @@ export async function GET(
       options: q.options,
       correctIndex: q.correctIndex, // Include for client-side scoring
       explanation: q.explanation, // Include explanation
-      context: q.context,     // Include context for passage-based questions
-      groupId: q.groupId,     // Include groupId for grouping
+      context: q.context, // Include context for passage-based questions
+      groupId: q.groupId, // Include groupId for grouping
     }));
 
-    return NextResponse.json({
-      quizId: quiz.quizId,
-      title: quiz.title,
-      questions: formattedQuestions,
-    });
+    return new Response(
+      JSON.stringify({
+        quizId: quiz.quizId,
+        title: quiz.title,
+        questions: formattedQuestions,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
-    console.error('Error fetching quiz questions:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch quiz questions' },
-      { status: 500 }
+    console.error("Error fetching quiz questions:", error);
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch quiz questions" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   }
 }
-

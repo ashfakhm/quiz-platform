@@ -156,7 +156,10 @@ export default function LandingPage() {
   return (
     <AuroraBackground>
       {/* Navigation */}
-      <nav className="relative z-10 flex items-center justify-between p-4 md:p-6 overflow-hidden">
+      <nav
+        className="relative z-10 flex items-center justify-between p-4 md:p-6 overflow-hidden"
+        aria-label="Main navigation"
+      >
         <div className="flex items-center gap-2 min-w-0 shrink">
           <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-primary/50 flex items-center justify-center shrink-0">
             <span className="text-primary-foreground font-bold text-lg">Q</span>
@@ -195,14 +198,14 @@ export default function LandingPage() {
       {/* Main Content */}
       <main id="main-content" tabIndex={-1} className="focus:outline-none">
         {/* Hero Section */}
-        <section
+        <header
           ref={heroRef}
           className="relative z-10 flex flex-col items-center justify-center px-4 py-20 md:py-32 text-center"
         >
-          <div className="animate-in inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+          <p className="animate-in inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
             <Zap className="w-4 h-4" />
             Study & Exam Modes
-          </div>
+          </p>
 
           <h1 className="animate-in text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl mb-6">
             <span className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
@@ -253,16 +256,20 @@ export default function LandingPage() {
               </Button>
             )}
           </div>
-        </section>
+        </header>
 
         {/* Features Section */}
         <section
           ref={featuresRef}
           className="relative z-10 px-4 py-20 md:py-32"
+          aria-labelledby="features-heading"
         >
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <header className="text-center mb-16">
+              <h2
+                id="features-heading"
+                className="text-3xl md:text-4xl font-bold mb-4"
+              >
                 Everything You Need to{" "}
                 <span className="bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                   Succeed
@@ -271,11 +278,13 @@ export default function LandingPage() {
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                 Designed with precision. Built for learners who want results.
               </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            </header>
+            <ul
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+              role="list"
+            >
               {features.map((feature) => (
-                <div
+                <li
                   key={feature.title}
                   className="feature-card group relative p-6 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all duration-300"
                   style={{ opacity: 0 }}
@@ -297,14 +306,17 @@ export default function LandingPage() {
                   <p className="text-sm text-muted-foreground">
                     {feature.description}
                   </p>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="relative z-10 px-4 py-20">
+        <section
+          className="relative z-10 px-4 py-20"
+          aria-labelledby="cta-heading"
+        >
           <div className="max-w-4xl mx-auto text-center">
             <div className="relative p-8 md:p-12 rounded-3xl border border-border/50 bg-linear-to-br from-card/80 to-card/40 backdrop-blur-xl overflow-hidden">
               {/* Background decoration */}
@@ -312,7 +324,10 @@ export default function LandingPage() {
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
               <div className="relative z-10">
-                <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                <h2
+                  id="cta-heading"
+                  className="text-2xl md:text-3xl font-bold mb-4"
+                >
                   Ready to Start Your Journey?
                 </h2>
                 <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -359,7 +374,10 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-border/50 px-4 py-8">
+      <footer
+        className="relative z-10 border-t border-border/50 px-4 py-8"
+        aria-label="Site footer"
+      >
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
@@ -371,7 +389,10 @@ export default function LandingPage() {
               {`QuizMaster Pro © ${new Date().getFullYear()}. All rights reserved.`}
             </span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+          <nav
+            className="flex items-center gap-6 text-sm text-muted-foreground"
+            aria-label="Footer links"
+          >
             <Link href="#" className="hover:text-foreground transition-colors">
               Privacy
             </Link>
@@ -381,7 +402,7 @@ export default function LandingPage() {
             <Link href="#" className="hover:text-foreground transition-colors">
               Support
             </Link>
-          </div>
+          </nav>
         </div>
       </footer>
     </AuroraBackground>

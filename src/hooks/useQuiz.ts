@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import type {
   Question,
   QuizMode,
-
   QuizState,
   ValidationResult,
 } from "@/lib/types";
@@ -123,7 +122,7 @@ export function useQuiz() {
     let score = 0;
     state.questions.forEach((question) => {
       const selectedIndex = state.answers.get(question.id);
-      
+
       if (selectedIndex !== undefined) {
         if (selectedIndex === question.correctIndex) {
           score += 1; // Correct answer
@@ -231,7 +230,15 @@ export function useQuiz() {
         localStorage.setItem(getPersistKey(quizId), JSON.stringify(persist));
       } catch {}
     }
-  }, [state.mode, state.phase, state.answers, state.isModeLocked, state.startTime, state.endTime, quizId]);
+  }, [
+    state.mode,
+    state.phase,
+    state.answers,
+    state.isModeLocked,
+    state.startTime,
+    state.endTime,
+    quizId,
+  ]);
 
   // Should show explanation for a question
   const shouldShowExplanation = useCallback(
@@ -267,7 +274,6 @@ export function useQuiz() {
 
   // Can change answer
   const canChangeAnswer = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (_questionId: string): boolean => {
       if (state.phase !== "in-progress") return false;
       // In exam mode, can change until submitted
@@ -315,7 +321,7 @@ export function useQuizValidation() {
 
       // Check question count - must have at least 1 question
       if (questions.length === 0) {
-        errors.push('Quiz must have at least one question');
+        errors.push("Quiz must have at least one question");
       }
 
       // Check for duplicate IDs

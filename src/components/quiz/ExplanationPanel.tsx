@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Lightbulb, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -68,7 +67,7 @@ export function ExplanationPanel({
   const content = explanation?.content || fallbackContent;
 
   return (
-    <motion.div
+    <motion.aside
       initial={{ opacity: 0, height: 0, y: -10 }}
       animate={{ opacity: 1, height: "auto", y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
@@ -80,9 +79,10 @@ export function ExplanationPanel({
           ? "border-rose-500/30 bg-rose-500/5 dark:bg-rose-900/10"
           : "border-primary/30 bg-primary/5 dark:bg-primary/10"
       )}
+      aria-label="Explanation panel"
     >
       {/* Header */}
-      <div
+      <header
         className={cn(
           "flex items-center gap-2 px-4 py-2 border-b",
           isCorrect === true
@@ -115,12 +115,12 @@ export function ExplanationPanel({
             ? "Incorrect. The correct answer:"
             : "Explanation"}
         </span>
-      </div>
+      </header>
 
       {/* Content */}
-      <div className="px-4 py-3 text-sm text-muted-foreground leading-relaxed dark:text-gray-400">
+      <section className="px-4 py-3 text-sm text-muted-foreground leading-relaxed dark:text-gray-400">
         {renderContent(content)}
-      </div>
-    </motion.div>
+      </section>
+    </motion.aside>
   );
 }

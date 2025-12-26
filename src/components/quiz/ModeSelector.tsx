@@ -38,7 +38,10 @@ export function ModeSelector({
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <section
+      className="w-full max-w-2xl mx-auto"
+      aria-label="Quiz mode selector"
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -64,18 +67,28 @@ export function ModeSelector({
         )}
       </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <ul
+        className="grid md:grid-cols-2 gap-6"
+        role="listbox"
+        aria-label="Quiz modes"
+      >
         {modes.map((modeData) => (
-          <SpotlightCard
+          <li
             key={modeData.mode}
-            {...modeData}
-            isSelected={selectedMode === modeData.mode}
-            isLocked={isLocked}
-            onClick={() => onSelectMode(modeData.mode)}
-          />
+            role="option"
+            aria-selected={selectedMode === modeData.mode}
+            className="list-none"
+          >
+            <SpotlightCard
+              {...modeData}
+              isSelected={selectedMode === modeData.mode}
+              isLocked={isLocked}
+              onClick={() => onSelectMode(modeData.mode)}
+            />
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
 }
 
@@ -90,7 +103,7 @@ function SpotlightCard({
   mode: QuizMode;
   title: string;
   description: string;
-  icon: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  icon: React.ComponentType<{ className?: string }>;
   isSelected: boolean;
   isLocked: boolean;
   onClick: () => void;

@@ -49,35 +49,42 @@ export function ProgressHeader({
 }: ProgressHeaderProps) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
+  // Effect to clear timer when not in exam mode or not in progress
+  useEffect(() => {
+    if (
+      !startTime ||
+      !examDuration ||
+      mode !== "exam" ||
+      phase !== "in-progress"
+    ) {
+      Promise.resolve().then(() => setTimeLeft(null));
+    }
+  }, [startTime, examDuration, mode, phase]);
+
   // Timer logic
   useEffect(() => {
-    if (!startTime || !examDuration || mode !== "exam" || phase !== "in-progress") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (timeLeft !== null) setTimeLeft(null);
+    if (
+      !startTime ||
+      !examDuration ||
+      mode !== "exam" ||
+      phase !== "in-progress"
+    ) {
       return;
     }
 
-    const interval = setInterval(() => {
+    const updateTimer = () => {
       const now = new Date().getTime();
       const start = new Date(startTime).getTime();
       const elapsed = now - start;
       const remaining = Math.max(0, examDuration - elapsed);
-
       setTimeLeft(remaining);
+    };
 
-      if (remaining <= 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    // Initial calculation
-    const now = new Date().getTime();
-    const start = new Date(startTime).getTime();
-    const elapsed = now - start;
-    setTimeLeft(Math.max(0, examDuration - elapsed));
+    updateTimer(); // Initial calculation
+    const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [startTime, examDuration, mode, phase, timeLeft]);
+  }, [startTime, examDuration, mode, phase]);
 
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -94,156 +101,174 @@ export function ProgressHeader({
   const ModeIcon = mode === "study" ? BookOpen : ClipboardCheck;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
-      <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-6 w-full">
-        {/* Left: Quiz info */}
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back to dashboard</span>
-            </Button>
-          </Link>
-          <h1 className="text-lg font-semibold text-foreground hidden sm:block truncate max-w-50 md:max-w-none">
-            {quizTitle}
-          </h1>
-
-          {mode && (
-            <Badge
-              variant="secondary"
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1",
-                mode === "study"
-                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-              )}
-            >
-              <ModeIcon className="w-3.5 h-3.5" />
-              <span className="capitalize">{mode}</span>
-              {isModeLocked && <Lock className="w-3 h-3 ml-1 opacity-60" />}
-            </Badge>
-          )}
-        </div>
-
-        {/* Center: Progress */}
-        <div className="flex-1 max-w-xs hidden md:block">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-              <motion.div
-                className={cn(
-                  "h-full rounded-full",
-                  progressPercentage === 100
-                    ? "bg-linear-to-r from-emerald-500 to-emerald-400"
-                    : "bg-linear-to-r from-primary to-primary/80"
-                )}
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              />
-            </div>
-            <span className="text-sm font-medium text-muted-foreground min-w-16 text-right">
-              {answeredCount}/{totalQuestions}
-            </span>
-          </div>
-        </div>
-
-        {/* Timer (Exam Mode) */}
-        {mode === "exam" && timeLeft !== null && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className={cn(
-              "fixed top-20 right-4 md:right-8 z-40 flex flex-col items-end gap-1 px-5 py-3 rounded-2xl border shadow-xl backdrop-blur-xl transition-colors duration-300",
-              timeLeft < 30000
-                ? "bg-rose-500/10 border-rose-500/30 shadow-rose-500/10"
-                : "bg-background/60 border-border/50 shadow-black/5"
-            )}
-          >
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <Timer className={cn("w-3.5 h-3.5", timeLeft < 30000 && "text-rose-500 animate-pulse")} />
-              <span>Time Left</span>
-            </div>
-            <span
-              className={cn(
-                "font-mono text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-br",
-                timeLeft < 30000
-                  ? "from-rose-500 to-red-600"
-                  : "from-foreground to-foreground/70"
-              )}
-            >
-              {formatTime(timeLeft)}
-            </span>
-          </motion.div>
-        )}
-
-        {/* Mobile progress */}
-        <div className="md:hidden">
-          <Badge variant="outline" className="font-mono">
-            {answeredCount}/{totalQuestions}
-          </Badge>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
-          {/* Dashboard Link */}
-          <Link href="/dashboard" className="hidden sm:inline-flex">
-            <Button variant="ghost" size="sm" className="gap-1.5">
-              <LayoutDashboard className="w-4 h-4" />
-              <span className="hidden lg:inline">Dashboard</span>
-            </Button>
-          </Link>
-
-          {/* Reset button */}
-          {phase !== "idle" && phase !== "selecting-mode" && onReset && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onReset}
-              className="gap-1.5"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Reset</span>
-            </Button>
-          )}
-
-          {/* Submit button (Exam and Study mode) */}
-          {(mode === "exam" || mode === "study") && phase === "in-progress" && (
-            <Button
-              onClick={onSubmit}
-              disabled={!canSubmit}
-              className={cn(
-                "gap-1.5 transition-all duration-300",
-                canSubmit
-                  ? mode === "exam"
-                    ? "bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
-                    : "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25"
-                  : "opacity-50"
-              )}
-            >
-              <CheckCircle className="w-4 h-4" />
-              <span>{mode === "exam" ? "Submit" : "Complete"}</span>
-            </Button>
-          )}
-
-          {/* Authentication UI */}
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <Button variant="ghost" size="sm" className="gap-1.5">
-                <span className="hidden sm:inline">Sign In</span>
-                <span className="sm:hidden">Sign In</span>
+    <header
+      className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60"
+      aria-label="Quiz progress header"
+    >
+      <nav aria-label="Quiz navigation">
+        <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-6 w-full">
+          {/* Left: Quiz info */}
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Back to dashboard</span>
               </Button>
-            </SignInButton>
-          </SignedOut>
+            </Link>
+            <h1 className="text-lg font-semibold text-foreground hidden sm:block truncate max-w-50 md:max-w-none">
+              {quizTitle}
+            </h1>
 
-          <ThemeToggle />
+            {mode && (
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1",
+                  mode === "study"
+                    ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                )}
+              >
+                <ModeIcon className="w-3.5 h-3.5" />
+                <span className="capitalize">{mode}</span>
+                {isModeLocked && <Lock className="w-3 h-3 ml-1 opacity-60" />}
+              </Badge>
+            )}
+          </div>
+
+          {/* Center: Progress */}
+          <section
+            className="flex-1 max-w-xs hidden md:block"
+            aria-label="Quiz progress"
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className={cn(
+                    "h-full rounded-full",
+                    progressPercentage === 100
+                      ? "bg-linear-to-r from-emerald-500 to-emerald-400"
+                      : "bg-linear-to-r from-primary to-primary/80"
+                  )}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercentage}%` }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                />
+              </div>
+              <span className="text-sm font-medium text-muted-foreground min-w-16 text-right">
+                {answeredCount}/{totalQuestions}
+              </span>
+            </div>
+          </section>
+
+          {/* Timer (Exam Mode) */}
+          {mode === "exam" && timeLeft !== null && (
+            <motion.section
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={cn(
+                "fixed top-20 right-4 md:right-8 z-40 flex flex-col items-end gap-1 px-5 py-3 rounded-2xl border shadow-xl backdrop-blur-xl transition-colors duration-300",
+                timeLeft < 30000
+                  ? "bg-rose-500/10 border-rose-500/30 shadow-rose-500/10"
+                  : "bg-background/60 border-border/50 shadow-black/5"
+              )}
+              aria-label="Exam timer"
+            >
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <Timer
+                  className={cn(
+                    "w-3.5 h-3.5",
+                    timeLeft < 30000 && "text-rose-500 animate-pulse"
+                  )}
+                />
+                <span>Time Left</span>
+              </div>
+              <span
+                className={cn(
+                  "font-mono text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-br",
+                  timeLeft < 30000
+                    ? "from-rose-500 to-red-600"
+                    : "from-foreground to-foreground/70"
+                )}
+              >
+                {formatTime(timeLeft)}
+              </span>
+            </motion.section>
+          )}
+
+          {/* Mobile progress */}
+          <div className="md:hidden">
+            <Badge variant="outline" className="font-mono">
+              {answeredCount}/{totalQuestions}
+            </Badge>
+          </div>
+
+          {/* Right: Actions */}
+          <nav aria-label="Quiz actions" className="flex items-center gap-2">
+            {/* Dashboard Link */}
+            <Link href="/dashboard" className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm" className="gap-1.5">
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="hidden lg:inline">Dashboard</span>
+              </Button>
+            </Link>
+
+            {/* Reset button */}
+            {phase !== "idle" && phase !== "selecting-mode" && onReset && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onReset}
+                className="gap-1.5"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="hidden sm:inline">Reset</span>
+              </Button>
+            )}
+
+            {/* Submit button (Exam and Study mode) */}
+            {(mode === "exam" || mode === "study") &&
+              phase === "in-progress" && (
+                <Button
+                  onClick={onSubmit}
+                  disabled={!canSubmit}
+                  className={cn(
+                    "gap-1.5 transition-all duration-300",
+                    canSubmit
+                      ? mode === "exam"
+                        ? "bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
+                        : "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25"
+                      : "opacity-50"
+                  )}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>{mode === "exam" ? "Submit" : "Complete"}</span>
+                </Button>
+              )}
+
+            {/* Authentication UI */}
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="ghost" size="sm" className="gap-1.5">
+                  <span className="hidden sm:inline">Sign In</span>
+                  <span className="sm:hidden">Sign In</span>
+                </Button>
+              </SignInButton>
+            </SignedOut>
+
+            <ThemeToggle />
+          </nav>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile progress bar */}
-      <div className="md:hidden h-1 bg-muted">
+      <section
+        className="md:hidden h-1 bg-muted"
+        aria-label="Mobile quiz progress"
+      >
         <motion.div
           className={cn(
             "h-full",
@@ -253,7 +278,7 @@ export function ProgressHeader({
           animate={{ width: `${progressPercentage}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         />
-      </div>
+      </section>
     </header>
   );
 }

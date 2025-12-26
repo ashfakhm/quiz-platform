@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { BookOpen, ArrowRight, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import {
+  BookOpen,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  ArrowLeft,
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Quiz {
@@ -62,10 +68,16 @@ export default function QuizzesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
+      <header
+        className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl"
+        aria-label="Site header"
+      >
+        <nav
+          className="flex h-16 items-center justify-between px-4 md:px-6 w-full"
+          aria-label="Main navigation"
+        >
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -99,23 +111,29 @@ export default function QuizzesPage() {
             )}
             <ThemeToggle />
           </div>
-        </div>
+        </nav>
       </header>
 
       {/* Main Content */}
-      <main className="container max-w-6xl px-4 md:px-6 py-8 md:py-12 mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+      <section
+        className="container max-w-6xl px-4 md:px-6 py-8 md:py-12 mx-auto"
+        aria-labelledby="quizzes-heading"
+      >
+        <header className="mb-8">
+          <h1
+            id="quizzes-heading"
+            className="text-3xl md:text-4xl font-bold mb-2"
+          >
             Available Quizzes
           </h1>
           <p className="text-muted-foreground">
             Select a quiz to start learning
           </p>
-        </div>
+        </header>
 
         {/* Error Alert */}
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="mb-6" role="alert">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -123,11 +141,14 @@ export default function QuizzesPage() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <section
+            className="flex items-center justify-center py-12"
+            aria-label="Loading quizzes"
+          >
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          </section>
         ) : quizzes.length === 0 ? (
-          <Card>
+          <Card aria-label="No quizzes">
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground mb-4">
                 No quizzes available at the moment.
@@ -139,71 +160,72 @@ export default function QuizzesPage() {
           </Card>
         ) : (
           /* Quiz Grid */
-          <div className="grid gap-6 grid-cols-1">
+          <ul className="grid gap-6 grid-cols-1" aria-label="Quiz list">
             {quizzes.map((quiz) => (
-              <Card
-                key={quiz.quizId}
-                className="hover:shadow-lg transition-all duration-300 group"
-                style={{
-                  cursor: authLoaded && isSignedIn ? "pointer" : "default",
-                }}
-                onClick={() => {
-                  if (authLoaded && isSignedIn) {
-                    handleQuizClick(quiz.quizId);
-                  }
-                }}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <BookOpen className="w-5 h-5 text-primary" />
-                    <Badge
-                      variant="secondary"
-                      className="bg-primary/10 text-primary"
-                    >
-                      {quiz.questionCount} Q
-                    </Badge>
-                  </div>
-                  <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
-                    {quiz.title}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-3">
-                    {quiz.description || "No description available"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {authLoaded && isSignedIn ? (
-                    <Button
-                      className="w-full gap-2 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleQuizClick(quiz.quizId);
-                      }}
-                    >
-                      Start Quiz
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  ) : (
-                    <SignUpButton
-                      mode="modal"
-                      fallbackRedirectUrl={`/quiz/${quiz.quizId}`}
-                    >
+              <li key={quiz.quizId}>
+                <Card
+                  className="hover:shadow-lg transition-all duration-300 group"
+                  style={{
+                    cursor: authLoaded && isSignedIn ? "pointer" : "default",
+                  }}
+                  onClick={() => {
+                    if (authLoaded && isSignedIn) {
+                      handleQuizClick(quiz.quizId);
+                    }
+                  }}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-2">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                      <Badge
+                        variant="secondary"
+                        className="bg-primary/10 text-primary"
+                      >
+                        {quiz.questionCount} Q
+                      </Badge>
+                    </div>
+                    <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
+                      {quiz.title}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-3">
+                      {quiz.description || "No description available"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {authLoaded && isSignedIn ? (
                       <Button
                         className="w-full gap-2 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                         onClick={(e) => {
                           e.stopPropagation();
+                          handleQuizClick(quiz.quizId);
                         }}
                       >
                         Start Quiz
                         <ArrowRight className="w-4 h-4" />
                       </Button>
-                    </SignUpButton>
-                  )}
-                </CardContent>
-              </Card>
+                    ) : (
+                      <SignUpButton
+                        mode="modal"
+                        fallbackRedirectUrl={`/quiz/${quiz.quizId}`}
+                      >
+                        <Button
+                          className="w-full gap-2 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          Start Quiz
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </SignUpButton>
+                    )}
+                  </CardContent>
+                </Card>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

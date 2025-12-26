@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, use, useMemo } from "react";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import { apiClient } from "@/lib/api";
 import { useQuiz, useQuizValidation } from "@/hooks/useQuiz";
 import type { Question } from "@/lib/types";
@@ -75,8 +76,6 @@ export default function QuizPage({ params }: QuizPageProps) {
   // Exam Duration: 1 minute per question
   const examDuration = questions.length * 60 * 1000;
 
-
-
   // Calculate score manually for study mode
   const calculateScore = () => {
     let currentScore = 0;
@@ -141,60 +140,80 @@ export default function QuizPage({ params }: QuizPageProps) {
     loadQuiz();
   }, [quizId, initializeQuiz, validateQuestions]);
 
-
   // Calculate grouped questions and display labels
   const { groupedQuestions, displayLabels } = useMemo(() => {
-    type GroupType = 
-       | { type: 'single'; question: Question; index: number; displayId: string } 
-       | { type: 'group'; groupId: string; context: string; displayId: string; questions: { question: Question; index: number; displaySubId: string }[] };
+    type GroupType =
+      | { type: "single"; question: Question; index: number; displayId: string }
+      | {
+          type: "group";
+          groupId: string;
+          context: string;
+          displayId: string;
+          questions: {
+            question: Question;
+            index: number;
+            displaySubId: string;
+          }[];
+        };
 
     const groups: GroupType[] = [];
     // Populate with placeholders if questions are empty to avoid errors during initial load
-    if (!questions || questions.length === 0) return { groupedQuestions: [], displayLabels: [] };
+    if (!questions || questions.length === 0)
+      return { groupedQuestions: [], displayLabels: [] };
 
     const labels: string[] = new Array(questions.length).fill("");
-    
-    let currentGroup: { type: 'group'; groupId: string; context: string; displayId: string; questions: { question: Question; index: number; displaySubId: string }[] } | null = null;
+
+    let currentGroup: {
+      type: "group";
+      groupId: string;
+      context: string;
+      displayId: string;
+      questions: { question: Question; index: number; displaySubId: string }[];
+    } | null = null;
     let mainCounter = 0;
 
     (questions as Question[]).forEach((q, i) => {
       if (q.groupId) {
         if (currentGroup && currentGroup.groupId === q.groupId) {
-          const subId = `${currentGroup.displayId}.${currentGroup.questions.length + 1}`;
-          currentGroup.questions.push({ 
-             question: q, 
-             index: i,
-             displaySubId: subId
+          const subId = `${currentGroup.displayId}.${
+            currentGroup.questions.length + 1
+          }`;
+          currentGroup.questions.push({
+            question: q,
+            index: i,
+            displaySubId: subId,
           });
           labels[i] = subId;
         } else {
           mainCounter++;
           const subId = `${mainCounter}.1`;
           currentGroup = {
-            type: 'group',
+            type: "group",
             groupId: q.groupId,
-            context: q.context || '',
+            context: q.context || "",
             displayId: `${mainCounter}`,
-            questions: [{ 
-               question: q, 
-               index: i,
-               displaySubId: subId
-            }]
+            questions: [
+              {
+                question: q,
+                index: i,
+                displaySubId: subId,
+              },
+            ],
           };
           labels[i] = subId;
           groups.push(currentGroup);
         }
       } else {
-         mainCounter++;
-         const displayId = `${mainCounter}`;
-         currentGroup = null;
-         groups.push({ 
-            type: 'single', 
-            question: q, 
-            index: i,
-            displayId: displayId
-         });
-         labels[i] = displayId;
+        mainCounter++;
+        const displayId = `${mainCounter}`;
+        currentGroup = null;
+        groups.push({
+          type: "single",
+          question: q,
+          index: i,
+          displayId: displayId,
+        });
+        labels[i] = displayId;
       }
     });
 
@@ -234,7 +253,9 @@ export default function QuizPage({ params }: QuizPageProps) {
     if (!isSignedIn) {
       // Show sign-in prompt - redirect to sign-in page with return URL
       const currentUrl = window.location.pathname;
-      router.push(`/sign-in?redirect_url=${encodeURIComponent(currentUrl)}`);
+      router.push(
+        `/sign-in?redirect_url=${encodeURIComponent(currentUrl)}` as Route
+      );
       return;
     }
 
@@ -431,31 +452,36 @@ export default function QuizPage({ params }: QuizPageProps) {
   }
 
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen" aria-label="Quiz page">
       {/* Error banner for restore issues */}
       {error && error.includes("restore") && (
-        <div className="fixed top-0 left-0 w-full z-50 flex justify-center p-2">
+        <section
+          className="fixed top-0 left-0 w-full z-50 flex justify-center p-2"
+          aria-label="Quiz Progress Error"
+        >
           <Alert variant="destructive" className="max-w-lg w-full">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Quiz Progress Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        </div>
+        </section>
       )}
       {/* Progress Header */}
-      <ProgressHeader
-        quizTitle={quizData?.title || "Quiz"}
-        mode={mode}
-        phase={phase}
-        answeredCount={answeredCount}
-        totalQuestions={questions.length}
-        isModeLocked={isModeLocked}
-        onSubmit={handleSubmit}
-        onReset={handleReset}
-        canSubmit={true} // Allow submission even with 0 answers
-        startTime={state.startTime}
-        examDuration={examDuration}
-      />
+      <header>
+        <ProgressHeader
+          quizTitle={quizData?.title || "Quiz"}
+          mode={mode}
+          phase={phase}
+          answeredCount={answeredCount}
+          totalQuestions={questions.length}
+          isModeLocked={isModeLocked}
+          onSubmit={handleSubmit}
+          onReset={handleReset}
+          canSubmit={true} // Allow submission even with 0 answers
+          startTime={state.startTime}
+          examDuration={examDuration}
+        />
+      </header>
 
       {/* Main Content */}
       {/* ARIA live region for timer/errors */}
@@ -468,7 +494,7 @@ export default function QuizPage({ params }: QuizPageProps) {
         {error && !loading && error}
         {/* Add timer or dynamic status here if needed */}
       </div>
-      <main
+      <section
         id="main-content"
         ref={contentRef}
         className="container max-w-6xl px-4 py-8 mx-auto"
@@ -493,7 +519,10 @@ export default function QuizPage({ params }: QuizPageProps) {
         {(phase === "in-progress" || phase === "review") && (
           <div className="flex gap-8 items-start">
             {/* Main Question Column */}
-            <section className="flex-1 space-y-6 min-w-0" aria-labelledby="questions-heading">
+            <section
+              className="flex-1 space-y-6 min-w-0"
+              aria-labelledby="questions-heading"
+            >
               <h2 id="questions-heading" className="sr-only">
                 Quiz Questions
               </h2>
@@ -507,9 +536,9 @@ export default function QuizPage({ params }: QuizPageProps) {
                     <AlertTitle>Sign in required to submit</AlertTitle>
                     <AlertDescription className="flex items-center justify-between gap-4">
                       <span>
-                        You can take the quiz without signing in, but you&apos;ll
-                        need to sign in to submit your answers and save your
-                        results.
+                        You can take the quiz without signing in, but
+                        you&apos;ll need to sign in to submit your answers and
+                        save your results.
                       </span>
                       <SignInButton mode="modal">
                         <Button
@@ -539,82 +568,101 @@ export default function QuizPage({ params }: QuizPageProps) {
               {/* Grouped Questions Rendering */}
               {/* Grouped Questions Rendering */}
               {groupedQuestions.map((group, gIndex) => {
-                  if (group.type === 'group') {
-                    return (
-                      <div key={`group-${group.groupId}-${gIndex}`} className="mb-16 pb-8 border-b border-border/40 last:border-0 last:mb-0 last:pb-0">
-                         <div className="lg:grid lg:grid-cols-12 lg:gap-10 items-start">
-                            {/* Sticky Passage Panel (Left/Top) */}
-                            <div className="lg:col-span-5 lg:sticky lg:top-24 mb-8 lg:mb-0">
-                               <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-primary/10 shadow-sm overflow-hidden">
-                                  {/* Header */}
-                                  <div className="bg-primary/5 px-6 py-4 border-b border-primary/10 flex items-center gap-2">
-                                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">
-                                        ¶
-                                     </span>
-                                     <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Passage {group.displayId}</h3>
-                                  </div>
-                                  
-                                  {/* Content */}
-                                  <div className="p-6 md:p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                     <div className="prose dark:prose-invert prose-sm md:prose-base max-w-none text-card-foreground/90 font-serif leading-relaxed">
-                                        {group.context}
-                                     </div>
-                                  </div>
-                               </div>
-                            </div>
+                if (group.type === "group") {
+                  return (
+                    <article
+                      key={`group-${group.groupId}-${gIndex}`}
+                      className="mb-16 pb-8 border-b border-border/40 last:border-0 last:mb-0 last:pb-0"
+                      aria-label={`Passage ${group.displayId}`}
+                    >
+                      <div className="lg:grid lg:grid-cols-12 lg:gap-10 items-start">
+                        {/* Sticky Passage Panel (Left/Top) */}
+                        <aside
+                          className="lg:col-span-5 lg:sticky lg:top-24 mb-8 lg:mb-0"
+                          aria-label="Passage context"
+                        >
+                          <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+                            {/* Header */}
+                            <header className="bg-primary/5 px-6 py-4 border-b border-primary/10 flex items-center gap-2">
+                              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">
+                                ¶
+                              </span>
+                              <h3 className="text-sm font-bold text-primary uppercase tracking-wider">
+                                Passage {group.displayId}
+                              </h3>
+                            </header>
 
-                            {/* Questions Column (Right/Bottom) */}
-                            <div className="lg:col-span-7 space-y-10">
-                               {group.questions.map(({ question, index, displaySubId }) => (
-                                  <div 
-                                     key={question.id}
-                                     id={`question-${index}`} 
-                                     ref={index === 0 ? firstQuestionRef : undefined}
-                                     className="scroll-mt-32 relative pl-6 border-l-2 border-border hover:border-primary/50 transition-colors duration-300"
-                                  >
-                                     <div className="absolute -left-[9px] top-6 w-4 h-4 rounded-full border-2 border-border bg-background group-hover:border-primary transition-colors" />
-                                     <QuestionCard
-                                       question={question}
-                                       questionNumber={displaySubId}
-                                       selectedIndex={getAnswer(question.id)}
-                                       showFeedback={shouldShowFeedback(question.id)}
-                                       showExplanation={shouldShowExplanation(question.id)}
-                                       canChange={canChangeAnswer(question.id)}
-                                       onSelectAnswer={(optionIndex: number) =>
-                                         selectAnswer(question.id, optionIndex)
-                                       }
-                                     />
-                                  </div>
-                               ))}
-                            </div>
-                         </div>
+                            {/* Content */}
+                            <section className="p-6 md:p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                              <div className="prose dark:prose-invert prose-sm md:prose-base max-w-none text-card-foreground/90 font-serif leading-relaxed">
+                                {group.context}
+                              </div>
+                            </section>
+                          </div>
+                        </aside>
+
+                        {/* Questions Column (Right/Bottom) */}
+                        <section
+                          className="lg:col-span-7 space-y-10"
+                          aria-label={`Questions for passage ${group.displayId}`}
+                        >
+                          {group.questions.map(
+                            ({ question, index, displaySubId }) => (
+                              <article
+                                key={question.id}
+                                id={`question-${index}`}
+                                ref={index === 0 ? firstQuestionRef : undefined}
+                                className="scroll-mt-32 relative pl-6 border-l-2 border-border hover:border-primary/50 transition-colors duration-300"
+                                aria-label={`Question ${displaySubId}`}
+                              >
+                                <div className="absolute -left-[9px] top-6 w-4 h-4 rounded-full border-2 border-border bg-background group-hover:border-primary transition-colors" />
+                                <QuestionCard
+                                  question={question}
+                                  questionNumber={displaySubId}
+                                  selectedIndex={getAnswer(question.id)}
+                                  showFeedback={shouldShowFeedback(question.id)}
+                                  showExplanation={shouldShowExplanation(
+                                    question.id
+                                  )}
+                                  canChange={canChangeAnswer(question.id)}
+                                  onSelectAnswer={(optionIndex: number) =>
+                                    selectAnswer(question.id, optionIndex)
+                                  }
+                                />
+                              </article>
+                            )
+                          )}
+                        </section>
                       </div>
-                    );
-                  } else {
-                    // Single Question
-                    return (
-                      <div 
-                        key={group.question.id}
-                        id={`question-${group.index}`}
-                        ref={group.index === 0 ? firstQuestionRef : undefined}
-                        className="mb-8 scroll-mt-24"
-                      >
-                         <QuestionCard
-                           question={group.question}
-                           questionNumber={group.displayId}
-                           // removed prefix override to use default logic if needed, or keeping it clean
-                           selectedIndex={getAnswer(group.question.id)}
-                           showFeedback={shouldShowFeedback(group.question.id)}
-                           showExplanation={shouldShowExplanation(group.question.id)}
-                           canChange={canChangeAnswer(group.question.id)}
-                           onSelectAnswer={(optionIndex: number) =>
-                             selectAnswer(group.question.id, optionIndex)
-                           }
-                         />
-                      </div>
-                    );
-                  }
-                })}
+                    </article>
+                  );
+                } else {
+                  // Single Question
+                  return (
+                    <article
+                      key={group.question.id}
+                      id={`question-${group.index}`}
+                      ref={group.index === 0 ? firstQuestionRef : undefined}
+                      className="mb-8 scroll-mt-24"
+                      aria-label={`Question ${group.displayId}`}
+                    >
+                      <QuestionCard
+                        question={group.question}
+                        questionNumber={group.displayId}
+                        selectedIndex={getAnswer(group.question.id)}
+                        showFeedback={shouldShowFeedback(group.question.id)}
+                        showExplanation={shouldShowExplanation(
+                          group.question.id
+                        )}
+                        canChange={canChangeAnswer(group.question.id)}
+                        onSelectAnswer={(optionIndex: number) =>
+                          selectAnswer(group.question.id, optionIndex)
+                        }
+                      />
+                    </article>
+                  );
+                }
+              })}
 
               {/* Bottom Submit Button (Exam Mode) */}
               {mode === "exam" && phase === "in-progress" && (
@@ -672,7 +720,10 @@ export default function QuizPage({ params }: QuizPageProps) {
             </section>
 
             {/* Sidebar Navigator (Desktop) */}
-            <aside className="hidden lg:block w-72 sticky top-24 shrink-0 p-4 rounded-xl border border-border/50 bg-white/50 dark:bg-card/40 backdrop-blur-md shadow-sm">
+            <aside
+              className="hidden lg:block w-72 sticky top-24 shrink-0 p-4 rounded-xl border border-border/50 bg-white/50 dark:bg-card/40 backdrop-blur-md shadow-sm"
+              aria-label="Question navigation"
+            >
               <QuestionNavigator
                 totalQuestions={questions.length}
                 answers={state.answers}
@@ -689,7 +740,7 @@ export default function QuizPage({ params }: QuizPageProps) {
             </aside>
           </div>
         )}
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
