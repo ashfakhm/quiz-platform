@@ -13,19 +13,22 @@
 
 ## 🚀 Features at a Glance
 
-- **Dual-Mode Learning**: Study Mode (immediate feedback, explanations) & Exam Mode (realistic test simulation, analytics). Always prompts for mode selection when starting a new quiz.
-- **Modern UI**: Aurora backgrounds, glassmorphism, and smooth motion via GSAP & Framer Motion.
-- **Adaptive Theming**: System-aware dark/light mode, zero FOUC.
+- **Dual-Mode Learning**: Study Mode (immediate feedback, explanations, unlimited attempts) & Exam Mode (timed, analytics, one attempt per session). Always prompts for mode selection on new quiz start.
+- **Sticky ProgressHeader & Timer**: Navigation bar and timer are always visible at the top in exam mode, never scroll out of view.
+- **Modern UI/UX**: Aurora backgrounds, glassmorphism, smooth motion (GSAP, Framer Motion), mobile-first responsive design.
+- **Adaptive Theming**: System-aware dark/light mode, zero FOUC, theme toggle.
 - **Secure Auth**: Clerk (Google OAuth, Magic Links), edge middleware, public/private route control.
-- **Type Safety**: End-to-end strict TypeScript 5.
-- **Performance**: Turbopack, edge caching, WebVitals analytics, dynamic SEO metadata.
-- **Accessibility**: WCAG 2.1, keyboard navigation, skip links, semantic HTML.
+- **Type Safety**: End-to-end strict TypeScript 5, all code passes ESLint and strict TS checks.
+- **Performance**: Turbopack, edge caching, WebVitals analytics, dynamic SEO metadata, fast cold starts.
+- **Accessibility**: WCAG 2.1, keyboard navigation, skip links, ARIA live regions, semantic HTML throughout.
 - **Error Handling**: Custom 404, 401, 403, 500 pages with system UI and automatic redirects for protected/admin routes.
 - **API-First**: Modular Next.js API routes, MongoDB/Mongoose integration-ready.
+- **Admin Panel**: Create, edit, and manage quizzes; view all quizzes, filter, and search.
+- **Dynamic Metadata**: All pages use Next.js metadata for SEO (title, description, OpenGraph, Twitter, robots, canonical).
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture Overview (2025)
 
 **Domain-Driven Design (DDD)** within Next.js App Directory:
 
@@ -40,7 +43,7 @@ graph TD
     UI-->GSAP[GSAP Animations]
 ```
 
-### Directory Structure
+### Directory Structure (Highlights)
 
 ```bash
 src/
@@ -147,11 +150,11 @@ src/
 
 ## 🌐 SEO, Performance & Error Handling
 
-- **Dynamic Metadata**: All pages use Next.js metadata for titles, descriptions, OpenGraph, Twitter, robots, and canonical tags.
+- **Dynamic Metadata**: All pages use Next.js metadata export (no <Head> in pages) for SEO: titles, descriptions, OpenGraph, Twitter, robots, canonical tags.
 - **Custom Error Pages**: 404, 401, 403, 500—styled to match system UI, with clear messaging and navigation.
 - **Automatic Redirects**: Admin/protected routes use router.replace or window.location.replace to redirect unauthorized/forbidden users to 401/403 pages.
 - **WebVitals & Analytics**: Real user metrics and analytics integrated in layout.
-- **Accessibility**: Skip links, focus management, ARIA live regions, semantic structure.
+- **Accessibility**: Skip links, focus management, ARIA live regions, semantic structure, semantic tags (<main>, <section>, <nav>, <header>, <article>, <aside>, <footer>, <h1>-<h6>).
 - **Strict Linting/TypeScript**: All code passes ESLint (Next.js config) and strict TS checks.
 
 ---
@@ -172,11 +175,11 @@ src/
 
 ## 🚦 Getting Started
 
-### Quiz Start Behavior
+### Quiz Start & Reset Behavior
 
-When you start a quiz from the "Available Quizzes" page, any previous progress is cleared and you are always prompted to choose a mode (Study or Exam). This is achieved by appending `?new=1` to the quiz URL, which resets the quiz state and ensures a fresh attempt.
-
-Developers: If you want to force a new quiz attempt programmatically, append `?new=1` to the quiz route (e.g., `/quiz/123?new=1`).
+- Starting a quiz from "Available Quizzes" always clears previous progress and prompts for mode selection (Study or Exam).
+- This is achieved by appending `?new=1` to the quiz URL, which resets the quiz state and ensures a fresh attempt.
+- Developers: To force a new quiz attempt programmatically, append `?new=1` to the quiz route (e.g., `/quiz/123?new=1`).
 
 ### Prerequisites
 
@@ -232,4 +235,6 @@ Distributed under the MIT License. See `LICENSE` for details.
 
 ---
 
-_Documentation maintained by the QuizMaster Pro Engineering Team._
+---
+
+_Documentation maintained by the QuizMaster Pro Engineering Team. Last updated: 2025-12-26._
