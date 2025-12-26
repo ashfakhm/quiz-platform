@@ -65,9 +65,9 @@ export default function QuizzesPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container max-w-6xl flex h-16 items-center justify-between px-4 md:px-6 mx-auto">
+        <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard">
+            <Link href="/">
               <Button variant="ghost" size="icon" className="h-9 w-9">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back to dashboard</span>

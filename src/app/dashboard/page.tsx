@@ -190,7 +190,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container max-w-5xl flex h-16 items-center justify-between px-4 md:px-6 mx-auto">
+        <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button variant="ghost" size="icon" className="h-9 w-9">
