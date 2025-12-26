@@ -68,7 +68,13 @@ export default function QuizPage({ params }: QuizPageProps) {
     shouldShowExplanation,
     shouldShowFeedback,
     canChangeAnswer,
+    state,
   } = useQuiz();
+
+  // Exam Duration: 1 minute per question
+  const examDuration = questions.length * 60 * 1000;
+
+
 
   // Calculate score manually for study mode
   const calculateScore = () => {
@@ -144,11 +150,14 @@ export default function QuizPage({ params }: QuizPageProps) {
   }, [phase]);
 
   // Handle submit - allows submission with partial answers
-  const handleSubmit = async () => {
-    // Only submit if at least one question is answered
-    if (answeredCount === 0) {
-      return;
-    }
+  const handleSubmit = async (eOrForce?: React.MouseEvent | boolean) => {
+    const isForceSubmit = eOrForce === true;
+
+    // Only submit if at least one question is answered, unless forced by timer
+    // User requested to allow submitting even with 0 answers
+    // if (answeredCount === 0 && !isForceSubmit) {
+    //   return;
+    // }
 
     // Submit in both exam and study mode
     if (mode !== "exam" && mode !== "study") {
@@ -231,6 +240,39 @@ export default function QuizPage({ params }: QuizPageProps) {
       }
     }
   };
+
+  // Keep a ref to handleSubmit to avoid stale closures in the timer interval
+  const handleSubmitRef = useRef(handleSubmit);
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  });
+
+  // Handle auto-submit when timer expires
+  useEffect(() => {
+    if (
+      mode !== "exam" ||
+      phase !== "in-progress" ||
+      !state.startTime ||
+      questions.length === 0
+    ) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const start = new Date(state.startTime!).getTime();
+      const elapsed = now - start;
+      const remaining = examDuration - elapsed;
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        // Auto-submit using the ref to get the latest closure
+        handleSubmitRef.current(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [mode, phase, state.startTime, questions.length, examDuration]);
 
   // Proctoring: Exam mode restrictions (must be before any early return)
   useEffect(() => {
@@ -348,7 +390,9 @@ export default function QuizPage({ params }: QuizPageProps) {
         isModeLocked={isModeLocked}
         onSubmit={handleSubmit}
         onReset={handleReset}
-        canSubmit={answeredCount > 0} // Allow submission if at least one question is answered
+        canSubmit={true} // Allow submission even with 0 answers
+        startTime={state.startTime}
+        examDuration={examDuration}
       />
 
       {/* Main Content */}
@@ -454,14 +498,9 @@ export default function QuizPage({ params }: QuizPageProps) {
                 <Button
                   size="lg"
                   onClick={handleSubmit}
-                  disabled={answeredCount === 0}
                   className={`
                     gap-2 shadow-lg transition-all duration-300
-                    ${
-                      answeredCount > 0
-                        ? "bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/25"
-                        : "opacity-50"
-                    }
+                    bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/25
                   `}
                   aria-label="Submit Quiz"
                 >

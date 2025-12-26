@@ -55,6 +55,8 @@ export function useQuiz() {
         answers: restored?.answers
           ? new Map(Object.entries(restored.answers))
           : new Map(),
+        startTime: restored?.startTime ? new Date(restored.startTime) : null,
+        endTime: restored?.endTime ? new Date(restored.endTime) : null,
         isModeLocked: restored?.isModeLocked ?? false,
       });
     },
@@ -215,13 +217,15 @@ export function useQuiz() {
         mode: state.mode,
         phase: state.phase,
         answers: Object.fromEntries(state.answers),
+        startTime: state.startTime,
+        endTime: state.endTime,
         isModeLocked: state.isModeLocked,
       };
       try {
         localStorage.setItem(getPersistKey(quizId), JSON.stringify(persist));
       } catch {}
     }
-  }, [state.mode, state.phase, state.answers, state.isModeLocked, quizId]);
+  }, [state.mode, state.phase, state.answers, state.isModeLocked, state.startTime, state.endTime, quizId]);
 
   // Should show explanation for a question
   const shouldShowExplanation = useCallback(

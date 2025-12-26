@@ -13,10 +13,12 @@ import {
   RotateCcw,
   LayoutDashboard,
   ArrowLeft,
+  Timer,
 } from "lucide-react";
 import type { QuizMode, QuizPhase } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 interface ProgressHeaderProps {
   quizTitle: string;
@@ -28,6 +30,8 @@ interface ProgressHeaderProps {
   onSubmit?: () => void;
   onReset?: () => void;
   canSubmit?: boolean;
+  startTime?: Date | null;
+  examDuration?: number | null;
 }
 
 export function ProgressHeader({
@@ -40,7 +44,49 @@ export function ProgressHeader({
   onSubmit,
   onReset,
   canSubmit = false,
+  startTime,
+  examDuration,
 }: ProgressHeaderProps) {
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  // Timer logic
+  useEffect(() => {
+    if (!startTime || !examDuration || mode !== "exam" || phase !== "in-progress") {
+      setTimeLeft(null);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const start = new Date(startTime).getTime();
+      const elapsed = now - start;
+      const remaining = Math.max(0, examDuration - elapsed);
+
+      setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    // Initial calculation
+    const now = new Date().getTime();
+    const start = new Date(startTime).getTime();
+    const elapsed = now - start;
+    setTimeLeft(Math.max(0, examDuration - elapsed));
+
+    return () => clearInterval(interval);
+  }, [startTime, examDuration, mode, phase]);
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   const progressPercentage =
     totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
@@ -99,6 +145,35 @@ export function ProgressHeader({
             </span>
           </div>
         </div>
+
+        {/* Timer (Exam Mode) */}
+        {mode === "exam" && timeLeft !== null && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className={cn(
+              "fixed top-20 right-4 md:right-8 z-40 flex flex-col items-end gap-1 px-5 py-3 rounded-2xl border shadow-xl backdrop-blur-xl transition-colors duration-300",
+              timeLeft < 30000
+                ? "bg-rose-500/10 border-rose-500/30 shadow-rose-500/10"
+                : "bg-background/60 border-border/50 shadow-black/5"
+            )}
+          >
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <Timer className={cn("w-3.5 h-3.5", timeLeft < 30000 && "text-rose-500 animate-pulse")} />
+              <span>Time Left</span>
+            </div>
+            <span
+              className={cn(
+                "font-mono text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-br",
+                timeLeft < 30000
+                  ? "from-rose-500 to-red-600"
+                  : "from-foreground to-foreground/70"
+              )}
+            >
+              {formatTime(timeLeft)}
+            </span>
+          </motion.div>
+        )}
 
         {/* Mobile progress */}
         <div className="md:hidden">

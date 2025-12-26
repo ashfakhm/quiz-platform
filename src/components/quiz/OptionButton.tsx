@@ -30,7 +30,7 @@ export function OptionButton({
     if (!showFeedback) {
       // Before feedback
       if (isSelected) {
-        return "border-primary bg-primary/10 ring-2 ring-primary/30";
+        return "border-primary bg-primary/10 ring-2 ring-primary/30 dark:border-blue-500 dark:bg-blue-500/20 dark:ring-blue-500/50";
       }
       return "border-border hover:border-primary/50 hover:bg-accent/50";
     }
@@ -74,7 +74,7 @@ export function OptionButton({
             : showFeedback && isSelected && !isCorrect
             ? "bg-rose-500 text-white shadow-sm"
             : isSelected
-            ? "bg-primary text-primary-foreground shadow-sm dark:bg-primary dark:text-white"
+            ? "bg-primary text-primary-foreground shadow-sm dark:bg-blue-500 dark:text-white"
             : "bg-muted text-muted-foreground dark:bg-gray-700 dark:text-gray-300"
         )}
       >
