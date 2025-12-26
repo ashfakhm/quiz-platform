@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import connectDB from "@/lib/db/mongodb";
 import { Attempt } from "@/lib/models/Attempt";
 import { Quiz } from "@/lib/models/Quiz";
+import { Question } from "@/lib/models/Question";
 
 export async function GET(
   request: Request,
@@ -54,22 +55,37 @@ export async function GET(
     );
 
     // Format response
-    const formattedAttempts = validAttempts.map((attempt) => ({
-      attemptId: attempt.attemptId,
-      quizId: attempt.quizId,
-      quizTitle: attempt.quizTitle,
-      mode: attempt.mode,
-      score: attempt.score,
-      totalQuestions: attempt.totalQuestions,
-      attempted: attempt.attempted ?? attempt.totalQuestions, // fallback for legacy
-      correct: attempt.correct ?? null,
-      incorrect: attempt.incorrect ?? null,
-      result: attempt.result ?? null,
-      completedAt:
-        attempt.completedAt instanceof Date
-          ? attempt.completedAt.toISOString()
-          : new Date(attempt.completedAt).toISOString(),
-    }));
+    // For each attempt, fetch the questions and sum their marks
+    // For each attempt, fetch the questions and sum their marks
+    const formattedAttempts = await Promise.all(
+      validAttempts.map(async (attempt) => {
+        // Fetch all questions for this quiz
+        const questions = await Question.find({
+          id: { $in: attempt.answers.map((a: any) => a.questionId) },
+        });
+        const totalMarks = questions.reduce(
+          (sum: number, q: any) => sum + (q.mark ?? 1),
+          0
+        );
+        return {
+          attemptId: attempt.attemptId,
+          quizId: attempt.quizId,
+          quizTitle: attempt.quizTitle,
+          mode: attempt.mode,
+          score: attempt.score,
+          totalQuestions: attempt.totalQuestions,
+          totalMarks,
+          attempted: attempt.attempted ?? attempt.totalQuestions, // fallback for legacy
+          correct: attempt.correct ?? null,
+          incorrect: attempt.incorrect ?? null,
+          result: attempt.result ?? null,
+          completedAt:
+            attempt.completedAt instanceof Date
+              ? attempt.completedAt.toISOString()
+              : new Date(attempt.completedAt).toISOString(),
+        };
+      })
+    );
 
     return new Response(JSON.stringify({ attempts: formattedAttempts }), {
       status: 200,

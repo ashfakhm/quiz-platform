@@ -557,6 +557,12 @@ export default function QuizPage({ params }: QuizPageProps) {
                     score={score}
                     totalQuestions={questions.length}
                     onRestart={handleReset}
+                    questions={questions}
+                    answers={state.answers}
+                    totalMarks={questions.reduce(
+                      (sum, q) => sum + (q.mark ?? 1),
+                      0
+                    )}
                   />
                 </div>
               )}

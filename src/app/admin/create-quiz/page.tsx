@@ -27,6 +27,7 @@ interface Question {
     format: "markdown" | "text";
     content: string;
   };
+  mark?: number; // Mark for this question (1-10, default 1)
   context?: string; // For passage text
   groupId?: string; // To link grouped questions
 }
@@ -128,6 +129,7 @@ function CreateQuizPageInner() {
         format: "markdown",
         content: "",
       },
+      mark: 1,
     };
     setQuestions([...questions, newQuestion]);
   };
@@ -143,6 +145,7 @@ function CreateQuizPageInner() {
         format: "markdown",
         content: "",
       },
+      mark: 1,
       context: "",
       groupId,
       // isGrouped property is implied by having a groupId
@@ -262,6 +265,7 @@ function CreateQuizPageInner() {
             options: q.options.map((opt) => opt.trim()).filter((opt) => opt),
             correctIndex: q.correctIndex,
             explanation: q.explanation,
+            mark: typeof q.mark === 'number' && !isNaN(q.mark) ? q.mark : 1,
             context: q.context,
             groupId: q.groupId,
           })),
@@ -487,6 +491,27 @@ function CreateQuizPageInner() {
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium mb-2 block">
+                          Mark <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={10}
+                          step={1}
+                          value={typeof question.mark === 'number' ? question.mark : 1}
+                          onChange={e => {
+                            let val = parseInt(e.target.value, 10);
+                            if (isNaN(val) || val < 1) val = 1;
+                            if (val > 10) val = 10;
+                            updateQuestion(qIndex, 'mark', val);
+                          }}
+                          className="w-24 px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                          required
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Set the mark for this question (1-10, default 1)</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">
                           Question Text{" "}
                           <span className="text-destructive">*</span>
                         </label>
@@ -557,10 +582,10 @@ function CreateQuizPageInner() {
                       </div>
                     </div>
                   </Card>
-                  </div>
-                );
-                })}
               </div>
+            );
+          })}
+        </div>
 
               {error && (
                 <Alert variant="destructive">

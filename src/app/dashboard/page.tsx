@@ -117,6 +117,7 @@ export default function DashboardPage() {
         quizTitle: attempt.quizTitle,
         attempts: [],
         totalQuestions: attempt.totalQuestions,
+        totalMarks: attempt.totalMarks,
       };
     }
     acc[attempt.quizId].attempts.push(attempt);
@@ -125,9 +126,10 @@ export default function DashboardPage() {
       new Date(acc[attempt.quizId].attempts[0]?.completedAt || 0)
     ) {
       acc[attempt.quizId].totalQuestions = attempt.totalQuestions;
+      acc[attempt.quizId].totalMarks = attempt.totalMarks;
     }
     return acc;
-  }, {} as Record<string, { quizTitle: string; attempts: AttemptSummary[]; totalQuestions: number }>);
+  }, {} as Record<string, { quizTitle: string; attempts: AttemptSummary[]; totalQuestions: number; totalMarks: number }>);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -311,9 +313,11 @@ export default function DashboardPage() {
                     new Date(a.completedAt).getTime()
                 );
                 const latest = sortedAttempts[0];
+
                 const bestScore = Math.max(
                   ...quizGroup.attempts.map((a) => a.score)
                 );
+                const totalMarks = quizGroup.totalMarks;
 
                 // Show detailed stats for latest attempt
                 return (
@@ -323,7 +327,7 @@ export default function DashboardPage() {
                       totalAttempts={quizGroup.attempts.length}
                       bestScore={bestScore}
                       latestScore={latest.score}
-                      totalQuestions={quizGroup.totalQuestions}
+                      totalMarks={totalMarks}
                       attempted={latest.attempted}
                       correct={latest.correct}
                       incorrect={latest.incorrect}

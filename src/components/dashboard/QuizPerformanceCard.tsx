@@ -1,7 +1,7 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Activity, Target } from "lucide-react";
+import { Activity, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuizPerformanceCardProps {
@@ -9,7 +9,7 @@ interface QuizPerformanceCardProps {
   totalAttempts: number;
   bestScore: number;
   latestScore: number;
-  totalQuestions: number;
+  totalMarks: number;
   attempted?: number;
   correct?: number;
   incorrect?: number;
@@ -19,17 +19,18 @@ interface QuizPerformanceCardProps {
 export function QuizPerformanceCard({
   quizTitle,
   totalAttempts,
-  bestScore,
   latestScore,
-  totalQuestions,
+  totalMarks,
   attempted,
   correct,
   incorrect,
   result,
 }: QuizPerformanceCardProps) {
-  const maxScore = totalQuestions;
-  const displayPercentage = Math.round((bestScore / maxScore) * 100);
-  const isPass = displayPercentage >= 60;
+  const maxScore = totalMarks;
+  // Percentage for latest score (for the 'Latest' section)
+  const latestPercentage =
+    maxScore > 0 ? Math.round((latestScore / maxScore) * 100) : 0;
+  const isPass = latestPercentage >= 60;
 
   return (
     <article
@@ -114,45 +115,22 @@ export function QuizPerformanceCard({
             )}
           </div>
         )}
-        {/* Main Metric */}
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <Trophy className="w-3.5 h-3.5 text-amber-500" />
-              Personal Best
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">
-                {displayPercentage}%
-              </span>
-              <span className="text-sm font-medium text-muted-foreground">
-                ({bestScore}/{maxScore})
-              </span>
-            </div>
+        {/* Main Metric: Only Latest Score */}
+        <div className="flex flex-col items-start justify-between">
+          <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <Target
+              className={cn(
+                "w-3.5 h-3.5",
+                isPass ? "text-emerald-500" : "text-rose-500"
+              )}
+            />
+            Latest Score
           </div>
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-end gap-1.5">
-              <Target
-                className={cn(
-                  "w-3.5 h-3.5",
-                  isPass ? "text-emerald-500" : "text-rose-500"
-                )}
-              />
-              Latest
-            </div>
-            <div className="flex items-baseline justify-end gap-1">
-              <span
-                className={cn(
-                  "text-lg font-semibold",
-                  latestScore < 0 && "text-rose-500"
-                )}
-              >
-                {latestScore}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                / {maxScore} pts
-              </span>
-            </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold tracking-tight">
+              {latestPercentage}%
+            </span>
+            <span className="text-lg font-semibold">{latestScore} pts</span>
           </div>
         </div>
 
@@ -163,7 +141,7 @@ export function QuizPerformanceCard({
             <span>Target: 60%</span>
           </div>
           <Progress
-            value={displayPercentage}
+            value={latestPercentage}
             className={cn(
               "h-1.5",
               isPass ? "[&>div]:bg-emerald-500" : "[&>div]:bg-rose-500"

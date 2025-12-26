@@ -100,6 +100,7 @@ export async function GET(
       explanation: q.explanation, // Include explanation
       context: q.context, // Include context for passage-based questions
       groupId: q.groupId, // Include groupId for grouping
+      mark: q.mark, // Include mark for scoring
     }));
 
     return new Response(

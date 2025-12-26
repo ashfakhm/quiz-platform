@@ -115,8 +115,8 @@ export async function POST(
           score += mark;
           correct++;
         } else {
-          // Negative marking: 0.25% of the mark for this question
-          score -= mark * 0.0025;
+          // Negative marking: 25% of the mark for this question
+          score -= mark * 0.25;
           incorrect++;
         }
 

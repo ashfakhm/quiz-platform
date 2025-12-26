@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import connectDB from '@/lib/db/mongodb';
-import { Quiz } from '@/lib/models/Quiz';
-import { Question } from '@/lib/models/Question';
-import { Attempt } from '@/lib/models/Attempt';
-import { isAdmin } from '@/lib/utils/admin-server';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import connectDB from "@/lib/db/mongodb";
+import { Quiz } from "@/lib/models/Quiz";
+import { Question } from "@/lib/models/Question";
+import { Attempt } from "@/lib/models/Attempt";
+import { isAdmin } from "@/lib/utils/admin-server";
 import {
   validateQuizId,
   validateQuizTitle,
@@ -15,7 +15,7 @@ import {
   validateOptions,
   validateCorrectIndex,
   validateQuestionsArray,
-} from '@/lib/utils/security';
+} from "@/lib/utils/security";
 
 // GET quiz details with questions (for editing)
 export async function GET(
@@ -25,17 +25,14 @@ export async function GET(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
     const adminStatus = await isAdmin();
     if (!adminStatus) {
       return NextResponse.json(
-        { error: 'Forbidden: Only administrators can view quiz details' },
+        { error: "Forbidden: Only administrators can view quiz details" },
         { status: 403 }
       );
     }
@@ -46,10 +43,7 @@ export async function GET(
     // Find the quiz
     const quiz = await Quiz.findOne({ quizId });
     if (!quiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
     // Fetch all questions for this quiz
@@ -64,6 +58,7 @@ export async function GET(
       options: q.options,
       correctIndex: q.correctIndex,
       explanation: q.explanation,
+      mark: q.mark,
       context: q.context,
       groupId: q.groupId,
     }));
@@ -71,13 +66,13 @@ export async function GET(
     return NextResponse.json({
       quizId: quiz.quizId,
       title: quiz.title,
-      description: quiz.description || '',
+      description: quiz.description || "",
       questions: formattedQuestions,
     });
   } catch (error: any) {
-    console.error('Error fetching quiz:', error);
+    console.error("Error fetching quiz:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch quiz' },
+      { error: "Failed to fetch quiz" },
       { status: 500 }
     );
   }
@@ -91,17 +86,14 @@ export async function PUT(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
     const adminStatus = await isAdmin();
     if (!adminStatus) {
       return NextResponse.json(
-        { error: 'Forbidden: Only administrators can update quizzes' },
+        { error: "Forbidden: Only administrators can update quizzes" },
         { status: 403 }
       );
     }
@@ -114,7 +106,7 @@ export async function PUT(
     const quizIdValidation = validateQuizId(rawQuizId);
     if (!quizIdValidation.valid) {
       return NextResponse.json(
-        { error: quizIdValidation.error || 'Invalid quiz ID' },
+        { error: quizIdValidation.error || "Invalid quiz ID" },
         { status: 400 }
       );
     }
@@ -132,7 +124,7 @@ export async function PUT(
     const descValidation = validateQuizDescription(description);
     if (!descValidation.valid) {
       return NextResponse.json(
-        { error: 'Invalid description format' },
+        { error: "Invalid description format" },
         { status: 400 }
       );
     }
@@ -140,7 +132,7 @@ export async function PUT(
     // Validate questions array
     if (!questions || !Array.isArray(questions)) {
       return NextResponse.json(
-        { error: 'Questions must be an array' },
+        { error: "Questions must be an array" },
         { status: 400 }
       );
     }
@@ -158,10 +150,7 @@ export async function PUT(
     // Find the quiz
     const quiz = await Quiz.findOne({ quizId: rawQuizId.trim() });
     if (!quiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
     // Validate and check for duplicate IDs within the submitted questions
@@ -172,7 +161,7 @@ export async function PUT(
       const qIdValidation = validateQuestionId(q.id);
       if (!qIdValidation.valid) {
         return NextResponse.json(
-          { error: qIdValidation.error || 'Invalid question ID' },
+          { error: qIdValidation.error || "Invalid question ID" },
           { status: 400 }
         );
       }
@@ -186,7 +175,7 @@ export async function PUT(
 
     if (duplicateIds.length > 0) {
       return NextResponse.json(
-        { error: `Duplicate question IDs found: ${duplicateIds.join(', ')}` },
+        { error: `Duplicate question IDs found: ${duplicateIds.join(", ")}` },
         { status: 400 }
       );
     }
@@ -231,8 +220,8 @@ export async function PUT(
       }
 
       // Validate explanation
-      const explanation = q.explanation || { format: 'markdown', content: '' };
-      if (typeof explanation !== 'object' || !explanation.content) {
+      const explanation = q.explanation || { format: "markdown", content: "" };
+      if (typeof explanation !== "object" || !explanation.content) {
         return NextResponse.json(
           { error: `Question ${i + 1}: Explanation is required` },
           { status: 400 }
@@ -247,12 +236,18 @@ export async function PUT(
         existingQuestion.options = optionsValidation.sanitized!;
         existingQuestion.correctIndex = q.correctIndex ?? 0;
         existingQuestion.explanation = {
-          format: explanation.format === 'text' ? 'text' : 'markdown',
+          format: explanation.format === "text" ? "text" : "markdown",
           content: String(explanation.content).slice(0, 5000),
         };
+        // PATCH: Update mark field if present
+        if (typeof q.mark === "number" && !isNaN(q.mark)) {
+          existingQuestion.mark = q.mark;
+        } else {
+          existingQuestion.mark = 1;
+        }
         if (q.context) existingQuestion.context = q.context;
         if (q.groupId) existingQuestion.groupId = q.groupId;
-        
+
         await existingQuestion.save();
         questionIdsToUpdate.push(sanitizedId);
       } else {
@@ -263,7 +258,7 @@ export async function PUT(
           options: optionsValidation.sanitized!,
           correctIndex: q.correctIndex ?? 0,
           explanation: {
-            format: explanation.format === 'text' ? 'text' : 'markdown',
+            format: explanation.format === "text" ? "text" : "markdown",
             content: String(explanation.content).slice(0, 5000),
           },
           context: q.context,
@@ -280,18 +275,17 @@ export async function PUT(
     }
 
     // Get all question IDs
-    const allQuestionIds = [
-      ...questionIdsToUpdate,
-      ...newQuestionIds,
-    ];
+    const allQuestionIds = [...questionIdsToUpdate, ...newQuestionIds];
 
     // Remove questions that are no longer in the quiz
     const oldQuestionIds = quiz.questionIds;
-    const questionsToRemove = oldQuestionIds.filter((id: string) => !allQuestionIds.includes(id));
+    const questionsToRemove = oldQuestionIds.filter(
+      (id: string) => !allQuestionIds.includes(id)
+    );
 
     // Update quiz with sanitized data
     quiz.title = titleValidation.sanitized!;
-    quiz.description = descValidation.sanitized || '';
+    quiz.description = descValidation.sanitized || "";
     quiz.questionIds = allQuestionIds;
     await quiz.save();
 
@@ -305,9 +299,9 @@ export async function PUT(
       removedQuestions: questionsToRemove.length,
     });
   } catch (error: any) {
-    console.error('Error updating quiz:', error);
+    console.error("Error updating quiz:", error);
     return NextResponse.json(
-      { error: error.message || 'Failed to update quiz' },
+      { error: error.message || "Failed to update quiz" },
       { status: 500 }
     );
   }
@@ -321,28 +315,25 @@ export async function DELETE(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
     const adminStatus = await isAdmin();
     if (!adminStatus) {
       return NextResponse.json(
-        { error: 'Forbidden: Only administrators can delete quizzes' },
+        { error: "Forbidden: Only administrators can delete quizzes" },
         { status: 403 }
       );
     }
 
     const { quizId: rawQuizId } = await params;
-    
+
     // Validate quiz ID
     const quizIdValidation = validateQuizId(rawQuizId);
     if (!quizIdValidation.valid) {
       return NextResponse.json(
-        { error: quizIdValidation.error || 'Invalid quiz ID' },
+        { error: quizIdValidation.error || "Invalid quiz ID" },
         { status: 400 }
       );
     }
@@ -352,15 +343,14 @@ export async function DELETE(
     // Find the quiz
     const quiz = await Quiz.findOne({ quizId: rawQuizId.trim() });
     if (!quiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
     // Check if there are any attempts for this quiz
-    const attemptCount = await Attempt.countDocuments({ quizId: rawQuizId.trim() });
-    
+    const attemptCount = await Attempt.countDocuments({
+      quizId: rawQuizId.trim(),
+    });
+
     // Delete the quiz
     await Quiz.deleteOne({ quizId: rawQuizId.trim() });
 
@@ -377,11 +367,10 @@ export async function DELETE(
       attemptCount, // Inform admin how many attempts were associated
     });
   } catch (error: any) {
-    console.error('Error deleting quiz:', error);
+    console.error("Error deleting quiz:", error);
     return NextResponse.json(
-      { error: error.message || 'Failed to delete quiz' },
+      { error: error.message || "Failed to delete quiz" },
       { status: 500 }
     );
   }
 }
-

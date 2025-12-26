@@ -124,10 +124,11 @@ export function useQuiz() {
       const selectedIndex = state.answers.get(question.id);
 
       if (selectedIndex !== undefined) {
+        const mark = question.mark ?? 1;
         if (selectedIndex === question.correctIndex) {
-          score += 1; // Correct answer
+          score += mark; // Correct answer
         } else {
-          score -= 1; // Incorrect answer (Negative marking)
+          score -= mark * 0.25; // Incorrect answer (Negative marking)
         }
         // Unanswered questions are 0 (no change)
       }
@@ -274,6 +275,7 @@ export function useQuiz() {
 
   // Can change answer
   const canChangeAnswer = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (_questionId: string): boolean => {
       if (state.phase !== "in-progress") return false;
       // In exam mode, can change until submitted

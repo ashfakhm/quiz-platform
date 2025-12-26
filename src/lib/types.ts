@@ -9,6 +9,7 @@ export interface Question {
   explanation: { format: "markdown" | "text"; content: string };
   context?: string;
   groupId?: string;
+  mark?: number;
 }
 
 // Quiz response from API
@@ -70,6 +71,7 @@ export interface AttemptSummary {
   quizTitle: string;
   score: number;
   totalQuestions: number;
+  totalMarks: number;
   attempted: number;
   correct: number;
   incorrect: number;
