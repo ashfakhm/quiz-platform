@@ -25,6 +25,8 @@
 - **API-First**: Modular Next.js API routes, MongoDB/Mongoose integration-ready.
 - **Admin Panel & Roles**: Clerk organization-based roles—admins (assigned via Clerk dashboard) can add, edit, and delete quizzes; all other users are members with quiz-taking access only.
 - **Quiz Types**: Supports both passage-based quizzes (multiple questions per passage) and normal quizzes (single questions).
+- **Admin Split View**: Complex quiz creation made easy with a responsive split-view layout (navigation sidebar + editor), real-time validation, and optimistic updates.
+- **Focus Mode**: Distraction-free quiz interface with centered typography, sticky passage context, and mobile-optimized navigation drawer.
 - **Dynamic Metadata**: All pages use Next.js metadata for SEO (title, description, OpenGraph, Twitter, robots, canonical).
 
 ---
@@ -124,6 +126,7 @@ src/
 │       ├── radio-group.tsx
 │       ├── scroll-area.tsx
 │       ├── separator.tsx
+│       ├── sheet.tsx
 │       └── skeleton.tsx
 ├── hooks/                   # Custom React hooks
 │   └── useQuiz.ts
@@ -247,4 +250,4 @@ Distributed under the MIT License. See `LICENSE` for details.
 
 ---
 
-_Documentation maintained by the QuizMaster Pro Engineering Team. Last updated: 2025-12-26._
+_Documentation maintained by the QuizMaster Pro Engineering Team. Last updated: 2025-12-27._
