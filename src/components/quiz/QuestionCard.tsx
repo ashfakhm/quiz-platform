@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Question } from "@/lib/types";
 import { OptionButton } from "./OptionButton";
 import { ExplanationPanel } from "./ExplanationPanel";
+import { cn } from "../../lib/utils";
 
 interface QuestionCardProps {
   question: Question;

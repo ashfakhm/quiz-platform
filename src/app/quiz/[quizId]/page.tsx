@@ -26,6 +26,20 @@ export default function QuizPage({ params }: QuizPageProps) {
   // Unwrap params using React.use()
   const { quizId } = use(params);
 
+  // Detect ?new=1 in the URL to force mode selection
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("new") === "1") {
+        // Clear any persisted quiz progress for this quiz
+        localStorage.removeItem(`quiz-progress-${quizId}`);
+        // Optionally, reload the page without the ?new param to avoid repeated resets
+        url.searchParams.delete("new");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+    }
+  }, [quizId]);
+
   const { isLoaded: authLoaded, isSignedIn } = useUser(); // Get auth state
   const router = useRouter(); // Initialize useRouter
 

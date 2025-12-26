@@ -53,9 +53,9 @@ export default function QuizzesPage() {
   };
 
   const handleQuizClick = (quizId: string) => {
-    // If user is signed in, go directly to quiz
+    // If user is signed in, go directly to quiz, always start new attempt
     if (authLoaded && isSignedIn) {
-      router.push(`/quiz/${quizId}`);
+      router.push(`/quiz/${quizId}?new=1`);
     }
     // If not signed in, the SignUpButton will handle authentication
     // After sign-up, user will be redirected and can click again
@@ -68,17 +68,25 @@ export default function QuizzesPage() {
         <div className="container max-w-6xl flex h-16 items-center justify-between px-4 md:px-6 mx-auto">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">Q</span>
+              <span className="text-primary-foreground font-bold text-sm">
+                Q
+              </span>
             </div>
-            <span className="text-lg font-bold hidden md:block">QuizMaster</span>
+            <span className="text-lg font-bold hidden md:block">
+              QuizMaster
+            </span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/">
-              <Button variant="ghost" size="sm">Home</Button>
+              <Button variant="ghost" size="sm">
+                Home
+              </Button>
             </Link>
             {authLoaded && isSignedIn && (
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">Dashboard</Button>
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
               </Link>
             )}
             <ThemeToggle />
@@ -89,7 +97,9 @@ export default function QuizzesPage() {
       {/* Main Content */}
       <main className="container max-w-6xl px-4 md:px-6 py-8 md:py-12 mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Available Quizzes</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            Available Quizzes
+          </h1>
           <p className="text-muted-foreground">
             Select a quiz to start learning
           </p>
@@ -111,7 +121,9 @@ export default function QuizzesPage() {
         ) : quizzes.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground mb-4">No quizzes available at the moment.</p>
+              <p className="text-muted-foreground mb-4">
+                No quizzes available at the moment.
+              </p>
               <Link href="/">
                 <Button variant="outline">Go Back Home</Button>
               </Link>
@@ -124,7 +136,9 @@ export default function QuizzesPage() {
               <Card
                 key={quiz.quizId}
                 className="hover:shadow-lg transition-all duration-300 group"
-                style={{ cursor: authLoaded && isSignedIn ? 'pointer' : 'default' }}
+                style={{
+                  cursor: authLoaded && isSignedIn ? "pointer" : "default",
+                }}
                 onClick={() => {
                   if (authLoaded && isSignedIn) {
                     handleQuizClick(quiz.quizId);
@@ -134,7 +148,10 @@ export default function QuizzesPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <BookOpen className="w-5 h-5 text-primary" />
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/10 text-primary"
+                    >
                       {quiz.questionCount} Q
                     </Badge>
                   </div>
@@ -182,4 +199,3 @@ export default function QuizzesPage() {
     </div>
   );
 }
-

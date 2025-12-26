@@ -5,7 +5,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black)
 
-**QuizMaster Pro** is a high-performance, adaptive MCQ quiz platform built to FAANG standards. It leverages a modern, edge-first architecture with **Next.js 16 (App Router)**, **React 19**, and a robust UI/UX system for seamless, accessible, and SEO-optimized learning experiences.
+**QuizMaster Pro** is a modern, adaptive MCQ quiz platform. It leverages a robust, edge-first architecture with **Next.js 16 (App Router)**, **React 19**, and a clean, accessible UI/UX for seamless learning experiences.
 
 > _Master any subject with confidence through our dual-mode learning engine._
 
@@ -13,10 +13,10 @@
 
 ## 🚀 Features at a Glance
 
-- **Dual-Mode Learning**: Study Mode (immediate feedback, explanations) & Exam Mode (realistic test simulation, analytics).
-- **Cinematic UI**: Aurora backgrounds, glassmorphism, and fluid motion via GSAP & Framer Motion.
+- **Dual-Mode Learning**: Study Mode (immediate feedback, explanations) & Exam Mode (realistic test simulation, analytics). Always prompts for mode selection when starting a new quiz.
+- **Modern UI**: Aurora backgrounds, glassmorphism, and smooth motion via GSAP & Framer Motion.
 - **Adaptive Theming**: System-aware dark/light mode, zero FOUC.
-- **Enterprise-Grade Auth**: Clerk (Google OAuth, Magic Links), secure edge middleware, public/private route control.
+- **Secure Auth**: Clerk (Google OAuth, Magic Links), edge middleware, public/private route control.
 - **Type Safety**: End-to-end strict TypeScript 5.
 - **Performance**: Turbopack, edge caching, WebVitals analytics, dynamic SEO metadata.
 - **Accessibility**: WCAG 2.1, keyboard navigation, skip links, semantic HTML.
@@ -44,22 +44,103 @@ graph TD
 
 ```bash
 src/
-├── app/                  # App Router: routes, layouts, error pages, metadata
-│   ├── 404.tsx           # Not Found (SEO, UI)
-│   ├── 401.tsx           # Unauthorized (SEO, UI)
-│   ├── 403.tsx           # Forbidden (SEO, UI)
-│   ├── 500.tsx           # Server Error (SEO, UI)
-│   ├── layout.tsx        # Root layout, ClerkProvider, ThemeProvider, WebVitals
-│   ├── page.metadata.ts  # Dynamic SEO metadata
-│   ├── dashboard/        # User dashboard (protected)
-│   ├── admin/            # Admin panel (protected, redirects to 401/403)
-│   ├── quizzes/          # Quiz selection
-│   ├── quiz/[quizId]/    # Quiz engine, dynamic metadata
-│   └── api/              # API routes (RESTful, edge-ready)
-├── components/           # UI, quiz, theme, auth, shadcn primitives
-├── lib/                  # Utilities, types, API clients, db, models
-├── hooks/                # Custom React hooks (useQuiz, etc.)
-└── scripts/              # Dev scripts (e.g., seed-database)
+├── app/                      # App Router: routes, layouts, error pages, metadata
+│   ├── 401.tsx               # Unauthorized page
+│   ├── 403.tsx               # Forbidden page
+│   ├── 404.tsx               # Not Found page
+│   ├── 500.tsx               # Server Error page
+│   ├── layout.tsx            # Root layout, providers
+│   ├── page.metadata.ts      # Dynamic SEO metadata
+│   ├── page.tsx              # Home page
+│   ├── dashboard/            # User dashboard (protected)
+│   ├── admin/                # Admin panel
+│   │   ├── create-quiz/      # Create quiz page
+│   │   │   └── page.tsx
+│   │   └── quizzes/          # Admin quizzes list
+│   │       └── page.tsx
+│   ├── quizzes/              # Quiz selection page
+│   │   └── page.tsx
+│   ├── quiz/                 # Quiz engine
+│   │   └── [quizId]/         # Dynamic quiz pages
+│   │       ├── page.metadata.ts
+│   │       └── page.tsx
+│   ├── api/                  # API routes
+│   │   ├── admin/
+│   │   │   ├── create-quiz/  # POST admin quiz creation
+│   │   │   │   └── route.ts
+│   │   │   └── quizzes/      # GET admin quizzes, quizId
+│   │   │       ├── route.ts
+│   │   │       └── [quizId]/
+│   │   │           └── route.ts
+│   │   ├── quiz/
+│   │   │   └── [quizId]/
+│   │   │       ├── attempt/
+│   │   │       │   └── route.ts
+│   │   │       └── questions/
+│   │   │           └── route.ts
+│   │   ├── quizzes/
+│   │   │   └── route.ts
+│   │   └── user/
+│   │       └── [userId]/
+│   │           └── history/
+│   │               └── route.ts
+│   ├── sign-in/             # Sign-in route
+│   │   └── [[...sign-in]]/
+│   │       └── page.tsx
+│   ├── sign-up/             # Sign-up route
+│   │   └── [[...sign-up]]/
+│   │       └── page.tsx
+│   ├── _components/         # App-level components
+│   │   └── WebVitals.tsx
+│   ├── globals.css          # Global styles
+│   ├── robots.ts            # robots.txt
+│   └── sitemap.ts           # sitemap.xml
+├── components/              # UI, quiz, theme, auth, shadcn primitives
+│   ├── auth/
+│   │   └── ClerkComponents.tsx
+│   ├── providers/
+│   │   └── theme-provider.tsx
+│   ├── quiz/
+│   │   ├── ExplanationPanel.tsx
+│   │   ├── ModeSelector.tsx
+│   │   ├── OptionButton.tsx
+│   │   ├── ProgressHeader.tsx
+│   │   ├── QuestionCard.tsx
+│   │   ├── ScoreSummary.tsx
+│   │   └── index.ts
+│   ├── theme/
+│   │   └── ThemeToggle.tsx
+│   └── ui/                  # shadcn/ui primitives
+│       ├── alert.tsx
+│       ├── aurora-background.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── dialog.tsx
+│       ├── radio-group.tsx
+│       ├── scroll-area.tsx
+│       ├── separator.tsx
+│       └── skeleton.tsx
+├── hooks/                   # Custom React hooks
+│   └── useQuiz.ts
+├── lib/                     # Utilities, types, API clients, db, models
+│   ├── api.ts
+│   ├── mock-data.ts
+│   ├── types.ts
+│   ├── utils.ts
+│   ├── db/
+│   │   └── mongodb.ts
+│   ├── models/
+│   │   ├── Attempt.ts
+│   │   ├── Question.ts
+│   │   └── Quiz.ts
+│   └── utils/
+│       ├── admin-server.ts
+│       ├── admin.ts
+│       └── security.ts
+├── proxy.ts                 # Proxy utility
+└── scripts/                 # Dev scripts
+   └── seed-database.ts
 ```
 
 ---
@@ -78,18 +159,24 @@ src/
 ## 🛠️ Technology Stack
 
 - **[Next.js 16](https://nextjs.org/)** (App Router, Server Components, Edge Middleware)
-- **[React 19](https://react.dev/)** (Concurrent features, hooks)
+- **[React 19](https://react.dev/)**
 - **[TypeScript 5](https://www.typescriptlang.org/)** (strict mode)
-- **[Tailwind CSS v4](https://tailwindcss.com/)** (utility-first, optimized config)
-- **[Shadcn UI](https://ui.shadcn.com/)** (accessible primitives)
-- **[GSAP](https://greensock.com/gsap/)**, **[Framer Motion](https://www.framer.com/motion/)** (animation)
-- **[Clerk](https://clerk.com/)** (auth, user management)
-- **[MongoDB](https://mongodb.com/)**, **[Mongoose](https://mongoosejs.com/)** (data, models)
-- **ESLint, Prettier** (code quality)
+- **[Tailwind CSS v4](https://tailwindcss.com/)**
+- **[Shadcn UI](https://ui.shadcn.com/)**
+- **[GSAP](https://greensock.com/gsap/)**, **[Framer Motion](https://www.framer.com/motion/)**
+- **[Clerk](https://clerk.com/)**
+- **[MongoDB](https://mongodb.com/)**, **[Mongoose](https://mongoosejs.com/)**
+- **ESLint, Prettier**
 
 ---
 
 ## 🚦 Getting Started
+
+### Quiz Start Behavior
+
+When you start a quiz from the "Available Quizzes" page, any previous progress is cleared and you are always prompted to choose a mode (Study or Exam). This is achieved by appending `?new=1` to the quiz URL, which resets the quiz state and ensures a fresh attempt.
+
+Developers: If you want to force a new quiz attempt programmatically, append `?new=1` to the quiz route (e.g., `/quiz/123?new=1`).
 
 ### Prerequisites
 
@@ -108,7 +195,7 @@ src/
    npm install
    ```
 3. **Configure Environment**
-   Duplicate `.env.example.txt` to `.env.local` and fill in:
+   Duplicate `env.example.txt` to `.env.local` and fill in:
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
    - `CLERK_SECRET_KEY`
    - `MONGODB_URI`
@@ -145,4 +232,4 @@ Distributed under the MIT License. See `LICENSE` for details.
 
 ---
 
-_Documentation maintained by Engineering Team @ QuizMaster Pro (FAANG Proxy)_
+_Documentation maintained by the QuizMaster Pro Engineering Team._
