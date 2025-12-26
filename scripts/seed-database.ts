@@ -32,49 +32,76 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
+async function createQuizWithQuestions(
+  quizId: string,
+  title: string,
+  description: string,
+  baseQuestions: typeof mockQuestions
+) {
+  console.log(`\n📦 Seeding Quiz: ${quizId}...`);
+
+  // 1. Create unique questions for this quiz
+  // We prefix the question ID with the quiz ID to ensure global uniqueness
+  const scopedQuestions = baseQuestions.map((q) => ({
+    ...q,
+    id: `${quizId}_${q.id}`, // e.g., 'nism-practice_q1'
+    _id: undefined, // Let MongoDB generate a fresh _id
+  }));
+
+  // 2. Insert questions
+  const insertedDocs = await Question.insertMany(scopedQuestions);
+  const questionIds = insertedDocs.map((q) => q.id);
+  console.log(`   ✅ Inserted ${insertedDocs.length} questions (Scoped IDs like '${quizId}_q1')`);
+
+  // 3. Create or Update Quiz
+  let quiz = await Quiz.findOne({ quizId });
+  if (quiz) {
+    quiz.questionIds = questionIds;
+    quiz.title = title;
+    quiz.description = description;
+    await quiz.save();
+    console.log(`   ✅ Updated quiz metadata`);
+  } else {
+    quiz = new Quiz({
+      quizId,
+      title,
+      description,
+      questionIds,
+    });
+    await quiz.save();
+    console.log(`   ✅ Created new quiz`);
+  }
+}
+
 async function seedDatabase() {
   try {
     console.log('🔌 Connecting to MongoDB...');
-    // Type assertion: we've already checked MONGODB_URI is not undefined above
     await mongoose.connect(MONGODB_URI!);
     console.log('✅ Connected to MongoDB');
 
-    // Clear existing data (optional - comment out if you want to keep existing data)
-    console.log('🧹 Clearing existing questions and quizzes...');
+    // Clear existing data to ensure a clean state
+    console.log('🧹 Clearing all existing questions and quizzes...');
     await Question.deleteMany({});
     await Quiz.deleteMany({});
     console.log('✅ Cleared existing data');
 
-    // Insert questions
-    console.log(`📝 Inserting ${mockQuestions.length} questions...`);
-    const questionDocs = await Question.insertMany(mockQuestions);
-    console.log(`✅ Inserted ${questionDocs.length} questions`);
+    // Create Main Quiz
+    await createQuizWithQuestions(
+      'nism-practice',
+      'NISM Series Investment Advisor Practice Test',
+      '50 questions covering investment advisory concepts, regulations, and best practices',
+      mockQuestions
+    );
 
-    // Create quiz with all question IDs
-    const questionIds = questionDocs.map((q) => q.id);
-    
-    // Check if quiz already exists
-    let quiz = await Quiz.findOne({ quizId: 'nism-practice' });
-    if (quiz) {
-      quiz.questionIds = questionIds;
-      quiz.title = 'NISM Series Investment Advisor Practice Test';
-      quiz.description = '50 questions covering investment advisory concepts, regulations, and best practices';
-      await quiz.save();
-      console.log('✅ Updated existing quiz: nism-practice');
-    } else {
-      quiz = new Quiz({
-        quizId: 'nism-practice',
-        title: 'NISM Series Investment Advisor Practice Test',
-        description: '50 questions covering investment advisory concepts, regulations, and best practices',
-        questionIds,
-      });
-      await quiz.save();
-      console.log('✅ Created quiz: nism-practice');
-    }
+    // Create a Copy to verify isolation (Optional, but good for verification)
+    await createQuizWithQuestions(
+      'financial-planning-basics',
+      'Financial Planning Basics',
+      'A simplified subset of questions for beginners.',
+      mockQuestions.slice(0, 10) // Just the first 10 for this different quiz
+    );
 
     console.log('\n🎉 Database seeded successfully!');
-    console.log(`   - ${questionDocs.length} questions inserted`);
-    console.log(`   - 1 quiz created (ID: nism-practice)`);
   } catch (error) {
     console.error('❌ Error seeding database:', error);
     process.exit(1);
