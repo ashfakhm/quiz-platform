@@ -12,6 +12,7 @@ import {
   CheckCircle,
   RotateCcw,
   LayoutDashboard,
+  ArrowLeft,
 } from "lucide-react";
 import type { QuizMode, QuizPhase } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,12 @@ export function ProgressHeader({
       <div className="container flex h-16 items-center justify-between gap-4 px-4 md:px-6">
         {/* Left: Quiz info */}
         <div className="flex items-center gap-3">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to dashboard</span>
+            </Button>
+          </Link>
           <h1 className="text-lg font-semibold text-foreground hidden sm:block truncate max-w-50 md:max-w-none">
             {quizTitle}
           </h1>

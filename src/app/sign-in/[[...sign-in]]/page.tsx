@@ -2,13 +2,25 @@
 
 import { SignIn } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url") || "/";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background to-background/80 p-4">
+    <div className="min-h-screen flex flex-col bg-linear-to-br from-background to-background/80">
+      <header className="p-4">
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Button>
+        </Link>
+      </header>
+      <div className="flex-1 flex items-center justify-center p-4">
       <SignIn
         fallbackRedirectUrl={redirectUrl}
         routing="path"
@@ -39,6 +51,7 @@ export default function SignInPage() {
           },
         }}
       />
+      </div>
     </div>
   );
 }

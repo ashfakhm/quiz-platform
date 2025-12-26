@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { BookOpen, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { BookOpen, ArrowRight, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Quiz {
@@ -66,16 +66,24 @@ export default function QuizzesPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container max-w-6xl flex h-16 items-center justify-between px-4 md:px-6 mx-auto">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                Q
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Back to dashboard</span>
+              </Button>
+            </Link>
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">
+                  Q
+                </span>
+              </div>
+              <span className="text-lg font-bold hidden md:block">
+                QuizMaster
               </span>
-            </div>
-            <span className="text-lg font-bold hidden md:block">
-              QuizMaster
-            </span>
-          </Link>
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <Link href="/">
               <Button variant="ghost" size="sm">
