@@ -26,6 +26,7 @@ export function ThemeProvider({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const stored = localStorage.getItem(storageKey) as Theme | null;
     if (stored) {
@@ -49,8 +50,11 @@ export function ThemeProvider({
     }
 
     root.classList.add(resolved);
-    setResolvedTheme(resolved);
-  }, [theme, mounted]);
+    if (resolvedTheme !== resolved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setResolvedTheme(resolved);
+    }
+  }, [theme, mounted, resolvedTheme]);
 
   // Listen for system theme changes
   useEffect(() => {

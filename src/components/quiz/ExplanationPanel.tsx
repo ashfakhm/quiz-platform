@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+
 import { Lightbulb, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ExplanationPanelProps {
   explanation: {
-    format: "markdown";
+    format: "markdown" | "text";
     content: string;
   };
   isCorrect: boolean | null;

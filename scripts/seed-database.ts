@@ -6,6 +6,8 @@
  * NOTE: This file is excluded from Next.js build via tsconfig.json
  */
 
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - This file is not part of the Next.js build
 import { config } from 'dotenv';
 import { resolve } from 'path';

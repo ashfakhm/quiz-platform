@@ -10,7 +10,7 @@ import { cn } from "../../lib/utils";
 
 interface QuestionCardProps {
   question: Question;
-  questionNumber: number;
+  questionNumber: number | string;
   selectedIndex: number | undefined;
   showFeedback: boolean;
   showExplanation: boolean;

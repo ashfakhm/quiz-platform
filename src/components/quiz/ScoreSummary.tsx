@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+
 import { Trophy, RotateCcw, Home, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

@@ -80,7 +80,6 @@ export function ModeSelector({
 }
 
 function SpotlightCard({
-  mode,
   title,
   description,
   icon: Icon,
@@ -91,7 +90,7 @@ function SpotlightCard({
   mode: QuizMode;
   title: string;
   description: string;
-  icon: any;
+  icon: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   isSelected: boolean;
   isLocked: boolean;
   onClick: () => void;

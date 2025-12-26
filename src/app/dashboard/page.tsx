@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import {
@@ -22,7 +20,7 @@ import {
   History,
   LayoutDashboard
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import type { AttemptSummary } from "@/lib/types";
 import { QuizPerformanceCard } from "@/components/dashboard/QuizPerformanceCard";
 
@@ -30,15 +28,13 @@ export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [attempts, setAttempts] = useState<AttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<Array<{ quizId: string; title: string; description: string; questionCount: number }>>([]);
-  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn || !user?.id) return;
     setLoading(true);
-    setError(null);
+    // setError(null);
     apiClient
       .getUserHistory(user.id)
       .then((res) => {
@@ -46,7 +42,7 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message || "Failed to load attempts.");
+        console.error("Failed to load attempts:", err);
         setLoading(false);
       });
   }, [isLoaded, isSignedIn, user?.id]);
@@ -63,7 +59,7 @@ export default function DashboardPage() {
       } catch (err) {
         console.error("Failed to fetch quizzes:", err);
       } finally {
-        setLoadingQuizzes(false);
+        // setLoadingQuizzes(false);
       }
     };
     fetchQuizzes();
@@ -131,7 +127,7 @@ export default function DashboardPage() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
   };
@@ -187,7 +183,7 @@ export default function DashboardPage() {
               Welcome back, {user?.firstName || "User"}
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Track your progress and master new skills. You've completed <span className="text-primary font-semibold">{attempts.length}</span> sessions so far.
+              Track your progress and master new skills. You&apos;ve completed <span className="text-primary font-semibold">{attempts.length}</span> sessions so far.
             </p>
           </div>
           {quizzes.length > 0 && (

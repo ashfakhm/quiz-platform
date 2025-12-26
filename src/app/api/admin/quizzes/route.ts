@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import connectDB from '@/lib/db/mongodb';
@@ -5,7 +6,7 @@ import { Quiz } from '@/lib/models/Quiz';
 import { isAdmin } from '@/lib/utils/admin-server';
 
 // GET all quizzes (admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {

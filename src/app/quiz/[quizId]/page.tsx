@@ -212,8 +212,8 @@ export default function QuizPage({ params }: QuizPageProps) {
   }, [phase]);
 
   // Handle submit - allows submission with partial answers
-  const handleSubmit = async (eOrForce?: React.MouseEvent | boolean) => {
-    const isForceSubmit = eOrForce === true;
+  const handleSubmit = async () => {
+    // const isForceSubmit = eOrForce === true;
 
     // Only submit if at least one question is answered, unless forced by timer
     // User requested to allow submitting even with 0 answers
@@ -329,7 +329,7 @@ export default function QuizPage({ params }: QuizPageProps) {
       if (remaining <= 0) {
         clearInterval(interval);
         // Auto-submit using the ref to get the latest closure
-        handleSubmitRef.current(true);
+        handleSubmitRef.current();
       }
     }, 1000);
 

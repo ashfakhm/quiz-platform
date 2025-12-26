@@ -52,7 +52,8 @@ export function ProgressHeader({
   // Timer logic
   useEffect(() => {
     if (!startTime || !examDuration || mode !== "exam" || phase !== "in-progress") {
-      setTimeLeft(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (timeLeft !== null) setTimeLeft(null);
       return;
     }
 
@@ -76,7 +77,7 @@ export function ProgressHeader({
     setTimeLeft(Math.max(0, examDuration - elapsed));
 
     return () => clearInterval(interval);
-  }, [startTime, examDuration, mode, phase]);
+  }, [startTime, examDuration, mode, phase, timeLeft]);
 
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);

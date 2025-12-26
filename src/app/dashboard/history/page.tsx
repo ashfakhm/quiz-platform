@@ -11,23 +11,21 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import {
   ArrowLeft,
   LayoutDashboard,
-  History,
-  ArrowRight
 } from "lucide-react";
-import { motion } from "framer-motion";
 import type { AttemptSummary } from "@/lib/types";
 
 export default function HistoryPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [attempts, setAttempts] = useState<AttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn || !user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    setError(null);
+    // setError(null);
     apiClient
       .getUserHistory(user.id)
       .then((res) => {
@@ -35,7 +33,7 @@ export default function HistoryPage() {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message || "Failed to load attempts.");
+        console.error("Failed to load attempts:", err);
         setLoading(false);
       });
   }, [isLoaded, isSignedIn, user?.id]);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+
 import Link from 'next/link';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser, useOrganization } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
@@ -10,20 +10,12 @@ import { Settings, LayoutDashboard } from 'lucide-react';
 export default function ClerkComponents() {
   const { user, isLoaded } = useUser();
   const { organization, isLoaded: orgLoaded } = useOrganization();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (isLoaded && orgLoaded && user) {
-      // Check admin status using organization membership or fallback
-      const adminStatus = checkAdminStatus({
-        ...user,
-        organizationMemberships: organization 
-          ? [{ organization: { id: organization.id } }]
-          : user.organizationMemberships,
-      });
-      setIsAdmin(adminStatus);
-    }
-  }, [user, isLoaded, organization, orgLoaded]);
+  const isAdmin = isLoaded && orgLoaded && user ? checkAdminStatus({
+    ...user,
+    organizationMemberships: organization 
+      ? [{ organization: { id: organization.id } }]
+      : user.organizationMemberships,
+  }) : false;
 
   return (
     <>

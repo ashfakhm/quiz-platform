@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import type {
   Question,
   QuizMode,
-  QuizPhase,
+
   QuizState,
   ValidationResult,
 } from "@/lib/types";
@@ -267,7 +267,8 @@ export function useQuiz() {
 
   // Can change answer
   const canChangeAnswer = useCallback(
-    (questionId: string): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_questionId: string): boolean => {
       if (state.phase !== "in-progress") return false;
       // In exam mode, can change until submitted
       // In study mode, can always change

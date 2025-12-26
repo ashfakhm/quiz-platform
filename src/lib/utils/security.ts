@@ -1,6 +1,7 @@
 /**
  * Security utilities for input validation and sanitization
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Maximum limits
 export const MAX_QUIZ_TITLE_LENGTH = 200;

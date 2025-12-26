@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+
 
 import { Question } from "@/lib/types";
 
@@ -50,7 +50,7 @@ export function QuestionNavigator({
         {Array.from({ length: totalQuestions }).map((_, index) => {
           const status = getStatus(index);
           
-          let baseClasses = "h-10 w-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors duration-200 border shadow-sm";
+          const baseClasses = "h-10 w-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors duration-200 border shadow-sm";
           let statusClasses = "bg-background border-border text-muted-foreground hover:border-primary/50 hover:bg-accent hover:text-foreground";
           
           if (status === "answered") {

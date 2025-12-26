@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import connectDB from '@/lib/db/mongodb';
@@ -13,7 +14,6 @@ import {
   validateOptions,
   validateCorrectIndex,
   validateQuestionsArray,
-  MAX_QUESTIONS_PER_QUIZ,
 } from '@/lib/utils/security';
 
 export async function POST(request: NextRequest) {
