@@ -4,4 +4,5 @@ export { OptionButton } from './OptionButton';
 export { ExplanationPanel } from './ExplanationPanel';
 export { ModeSelector } from './ModeSelector';
 export { ProgressHeader } from './ProgressHeader';
-export { ScoreSummary } from './ScoreSummary';
+export * from "./ScoreSummary";
+export * from "./QuestionNavigator";

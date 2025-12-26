@@ -12,6 +12,7 @@ import {
   ModeSelector,
   ProgressHeader,
   ScoreSummary,
+  QuestionNavigator,
 } from "@/components/quiz";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -409,7 +410,7 @@ export default function QuizPage({ params }: QuizPageProps) {
       <main
         id="main-content"
         ref={contentRef}
-        className="container max-w-3xl px-4 py-8 mx-auto"
+        className="container max-w-6xl px-4 py-8 mx-auto"
         aria-label="Quiz main content"
         tabIndex={-1}
       >
@@ -429,123 +430,144 @@ export default function QuizPage({ params }: QuizPageProps) {
 
         {/* Quiz Content */}
         {(phase === "in-progress" || phase === "review") && (
-          <section className="space-y-6" aria-labelledby="questions-heading">
-            <h2 id="questions-heading" className="sr-only">
-              Quiz Questions
-            </h2>
-            {/* Sign-in reminder for unauthenticated users */}
-            {phase === "in-progress" &&
-              mode === "exam" &&
-              authLoaded &&
-              !isSignedIn && (
-                <Alert className="border-amber-500/50 bg-amber-500/10">
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
-                  <AlertTitle>Sign in required to submit</AlertTitle>
-                  <AlertDescription className="flex items-center justify-between gap-4">
-                    <span>
-                      You can take the quiz without signing in, but you&apos;ll
-                      need to sign in to submit your answers and save your
-                      results.
-                    </span>
-                    <SignInButton mode="modal">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="whitespace-nowrap"
-                      >
-                        Sign In
-                      </Button>
-                    </SignInButton>
-                  </AlertDescription>
-                </Alert>
+          <div className="flex gap-8 items-start">
+            {/* Main Question Column */}
+            <section className="flex-1 space-y-6 min-w-0" aria-labelledby="questions-heading">
+              <h2 id="questions-heading" className="sr-only">
+                Quiz Questions
+              </h2>
+              {/* Sign-in reminder for unauthenticated users */}
+              {phase === "in-progress" &&
+                mode === "exam" &&
+                authLoaded &&
+                !isSignedIn && (
+                  <Alert className="border-amber-500/50 bg-amber-500/10">
+                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                    <AlertTitle>Sign in required to submit</AlertTitle>
+                    <AlertDescription className="flex items-center justify-between gap-4">
+                      <span>
+                        You can take the quiz without signing in, but you&apos;ll
+                        need to sign in to submit your answers and save your
+                        results.
+                      </span>
+                      <SignInButton mode="modal">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="whitespace-nowrap"
+                        >
+                          Sign In
+                        </Button>
+                      </SignInButton>
+                    </AlertDescription>
+                  </Alert>
+                )}
+              {/* Score Summary (Review Mode) */}
+              {phase === "review" && score !== null && (
+                <div className="mb-8">
+                  <ScoreSummary
+                    score={score}
+                    totalQuestions={questions.length}
+                    onRestart={handleReset}
+                  />
+                </div>
               )}
-            {/* Score Summary (Review Mode) */}
-            {phase === "review" && score !== null && (
-              <div className="mb-8">
-                <ScoreSummary
-                  score={score}
-                  totalQuestions={questions.length}
-                  onRestart={handleReset}
-                />
-              </div>
-            )}
 
-            {/* Questions */}
-            {(questions as Question[]).map((question, index) => (
-              <div
-                key={question.id}
-                ref={index === 0 ? firstQuestionRef : undefined}
-                tabIndex={index === 0 ? 0 : undefined}
-                aria-label={`Question ${index + 1}`}
-              >
-                <QuestionCard
-                  question={question}
-                  questionNumber={index + 1}
-                  selectedIndex={getAnswer(question.id)}
-                  showFeedback={shouldShowFeedback(question.id)}
-                  showExplanation={shouldShowExplanation(question.id)}
-                  canChange={canChangeAnswer(question.id)}
-                  onSelectAnswer={(optionIndex: number) =>
-                    selectAnswer(question.id, optionIndex)
-                  }
-                />
-              </div>
-            ))}
-
-            {/* Bottom Submit Button (Exam Mode) */}
-            {mode === "exam" && phase === "in-progress" && (
-              <div className="sticky bottom-4 flex justify-center pt-4">
-                <Button
-                  size="lg"
-                  onClick={handleSubmit}
-                  className={`
-                    gap-2 shadow-lg transition-all duration-300
-                    bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/25
-                  `}
-                  aria-label="Submit Quiz"
+              {/* Questions */}
+              {(questions as Question[]).map((question, index) => (
+                <div
+                  key={question.id}
+                  id={`question-${index}`} // Added ID for scrolling
+                  ref={index === 0 ? firstQuestionRef : undefined}
+                  tabIndex={index === 0 ? 0 : undefined}
+                  aria-label={`Question ${index + 1}`}
+                  className="scroll-mt-24" // Offset for sticky header
                 >
-                  Submit Quiz ({answeredCount}/{questions.length} answered)
-                </Button>
-              </div>
-            )}
-
-            {/* Bottom Submit Button (Study Mode) */}
-            {mode === "study" && phase === "in-progress" && (
-              <div className="sticky bottom-4 flex justify-center pt-4">
-                <Button
-                  size="lg"
-                  onClick={handleSubmit}
-                  disabled={answeredCount === 0}
-                  className={`
-                    gap-2 shadow-lg transition-all duration-300
-                    ${
-                      answeredCount > 0
-                        ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-blue-500/25"
-                        : "opacity-50"
+                  <QuestionCard
+                    question={question}
+                    questionNumber={index + 1}
+                    selectedIndex={getAnswer(question.id)}
+                    showFeedback={shouldShowFeedback(question.id)}
+                    showExplanation={shouldShowExplanation(question.id)}
+                    canChange={canChangeAnswer(question.id)}
+                    onSelectAnswer={(optionIndex: number) =>
+                      selectAnswer(question.id, optionIndex)
                     }
-                  `}
-                  aria-label="Complete Study Mode"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                  Complete Study ({answeredCount}/{questions.length} answered)
-                </Button>
-              </div>
-            )}
+                  />
+                </div>
+              ))}
 
-            {/* Completion message for Study Mode (optional info) */}
-            {mode === "study" && allAnswered && phase === "in-progress" && (
-              <div className="text-center py-4 mb-4">
-                <p
-                  className="text-muted-foreground"
-                  role="status"
-                  aria-live="polite"
-                >
-                  🎉 You&apos;ve reviewed all questions! Click &quot;Complete
-                  Study&quot; to save your results.
-                </p>
-              </div>
-            )}
-          </section>
+              {/* Bottom Submit Button (Exam Mode) */}
+              {mode === "exam" && phase === "in-progress" && (
+                <div className="sticky bottom-4 flex justify-center pt-4 z-10">
+                  <Button
+                    size="lg"
+                    onClick={handleSubmit}
+                    className={`
+                      gap-2 shadow-lg transition-all duration-300
+                      bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-emerald-500/25
+                    `}
+                    aria-label="Submit Quiz"
+                  >
+                    Submit Quiz ({answeredCount}/{questions.length} answered)
+                  </Button>
+                </div>
+              )}
+
+              {/* Bottom Submit Button (Study Mode) */}
+              {mode === "study" && phase === "in-progress" && (
+                <div className="sticky bottom-4 flex justify-center pt-4 z-10">
+                  <Button
+                    size="lg"
+                    onClick={handleSubmit}
+                    disabled={answeredCount === 0}
+                    className={`
+                      gap-2 shadow-lg transition-all duration-300
+                      ${
+                        answeredCount > 0
+                          ? "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-blue-500/25"
+                          : "opacity-50"
+                      }
+                    `}
+                    aria-label="Complete Study Mode"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    Complete Study ({answeredCount}/{questions.length} answered)
+                  </Button>
+                </div>
+              )}
+
+              {/* Completion message for Study Mode (optional info) */}
+              {mode === "study" && allAnswered && phase === "in-progress" && (
+                <div className="text-center py-4 mb-4">
+                  <p
+                    className="text-muted-foreground"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    🎉 You&apos;ve reviewed all questions! Click &quot;Complete
+                    Study&quot; to save your results.
+                  </p>
+                </div>
+              )}
+            </section>
+
+            {/* Sidebar Navigator (Desktop) */}
+            <aside className="hidden lg:block w-72 sticky top-24 shrink-0 p-4 rounded-xl border bg-card/50 backdrop-blur-sm">
+              <QuestionNavigator
+                totalQuestions={questions.length}
+                answers={state.answers}
+                questions={questions as Question[]}
+                mode={mode}
+                onNavigate={(index) => {
+                  const el = document.getElementById(`question-${index}`);
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
+              />
+            </aside>
+          </div>
         )}
       </main>
     </div>
