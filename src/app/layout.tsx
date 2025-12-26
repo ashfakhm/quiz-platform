@@ -77,8 +77,14 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50/50 dark:bg-background selection:bg-primary/20 relative`}
         >
+          {/* Global Background Decor */}
+          <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+            <div className="hidden dark:block absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
+            <div className="hidden dark:block absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px]" />
+          </div>
+          
           {/* Skip to main content link for accessibility */}
           <a
             href="#main-content"
@@ -87,7 +93,7 @@ export default function RootLayout({
           >
             Skip to main content
           </a>
-          <main id="main-content" tabIndex={-1} className="focus:outline-none">
+          <main id="main-content" tabIndex={-1} className="focus:outline-none relative z-10 w-full h-full">
             <ThemeProvider
               defaultTheme="system"
               storageKey="quiz-platform-theme"

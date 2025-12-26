@@ -55,7 +55,7 @@ const AttemptSchema = new Schema<IAttempt>(
     score: {
       type: Number,
       required: true,
-      min: 0,
+      // Removed min: 0 to allow negative marking
     },
     totalQuestions: {
       type: Number,

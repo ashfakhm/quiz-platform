@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import connectDB from '@/lib/db/mongodb';
 import { Attempt } from '@/lib/models/Attempt';
+import { Quiz } from '@/lib/models/Quiz';
 
 export async function GET(
   request: NextRequest,
@@ -35,8 +36,19 @@ export async function GET(
       .limit(50) // Limit to last 50 attempts
       .lean();
 
+    // Filter out attempts for quizzes that have been deleted
+    const quizIds = [...new Set(attempts.map((a: any) => a.quizId))];
+    const existingQuizzes = await Quiz.find({ quizId: { $in: quizIds } })
+      .select('quizId')
+      .lean();
+    
+    const existingQuizIds = new Set(existingQuizzes.map((q: any) => q.quizId));
+    
+    // Only keep attempts where the quiz still exists
+    const validAttempts = attempts.filter((attempt: any) => existingQuizIds.has(attempt.quizId));
+
     // Format response
-    const formattedAttempts = attempts.map((attempt) => ({
+    const formattedAttempts = validAttempts.map((attempt) => ({
       attemptId: attempt.attemptId,
       quizId: attempt.quizId,
       quizTitle: attempt.quizTitle,

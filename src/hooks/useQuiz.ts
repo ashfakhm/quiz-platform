@@ -120,14 +120,20 @@ export function useQuiz() {
 
   // Calculate score (only valid after submission in exam mode)
   const calculateScore = useCallback((): number => {
-    let correct = 0;
+    let score = 0;
     state.questions.forEach((question) => {
       const selectedIndex = state.answers.get(question.id);
-      if (selectedIndex === question.correctIndex) {
-        correct++;
+      
+      if (selectedIndex !== undefined) {
+        if (selectedIndex === question.correctIndex) {
+          score += 1; // Correct answer
+        } else {
+          score -= 1; // Incorrect answer (Negative marking)
+        }
+        // Unanswered questions are 0 (no change)
       }
     });
-    return correct;
+    return score;
   }, [state.questions, state.answers]);
 
   // Check if all questions are answered

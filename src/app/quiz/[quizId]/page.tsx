@@ -79,17 +79,18 @@ export default function QuizPage({ params }: QuizPageProps) {
 
   // Calculate score manually for study mode
   const calculateScore = () => {
-    let correct = 0;
+    let currentScore = 0;
     questions.forEach((question) => {
       const selectedIndex = getAnswer(question.id);
-      if (
-        selectedIndex !== undefined &&
-        selectedIndex === question.correctIndex
-      ) {
-        correct++;
+      if (selectedIndex !== undefined) {
+        if (selectedIndex === question.correctIndex) {
+          currentScore += 1;
+        } else {
+          currentScore -= 1;
+        }
       }
     });
-    return correct;
+    return currentScore;
   };
 
   // Warn on accidental navigation if quiz in progress and not all answered
@@ -370,7 +371,7 @@ export default function QuizPage({ params }: QuizPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Error banner for restore issues */}
       {error && error.includes("restore") && (
         <div className="fixed top-0 left-0 w-full z-50 flex justify-center p-2">
@@ -553,7 +554,7 @@ export default function QuizPage({ params }: QuizPageProps) {
             </section>
 
             {/* Sidebar Navigator (Desktop) */}
-            <aside className="hidden lg:block w-72 sticky top-24 shrink-0 p-4 rounded-xl border bg-card/50 backdrop-blur-sm">
+            <aside className="hidden lg:block w-72 sticky top-24 shrink-0 p-4 rounded-xl border border-border/50 bg-white/50 dark:bg-card/40 backdrop-blur-md shadow-sm">
               <QuestionNavigator
                 totalQuestions={questions.length}
                 answers={state.answers}

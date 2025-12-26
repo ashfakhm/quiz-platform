@@ -12,6 +12,7 @@ export async function POST(
 ) {
   try {
     const { userId } = await auth();
+    console.log(`[API] Processing attempt submission for user: ${userId}`);
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -80,7 +81,12 @@ export async function POST(
     const answerDetails = answersArray.map((answer: { questionId: string; selectedIndex: number }) => {
       const question = questions.find((q) => q.id === answer.questionId);
       const isCorrect = question?.correctIndex === answer.selectedIndex;
-      if (isCorrect) score++;
+      
+      if (isCorrect) {
+        score++;
+      } else {
+        score--; // Negative marking for incorrect answers
+      }
 
       return {
         questionId: answer.questionId,
@@ -104,6 +110,7 @@ export async function POST(
     });
 
     await attempt.save();
+    console.log(`[API] Attempt saved successfully: ${attempt.attemptId} with score ${score}`);
 
     return NextResponse.json({
       attemptId: attempt.attemptId,

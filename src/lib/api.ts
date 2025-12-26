@@ -12,6 +12,7 @@ class ApiClient {
   ): Promise<T> {
     const response = await fetch(endpoint, {
       ...options,
+      cache: 'no-store', // Ensure we always get fresh data
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
