@@ -23,7 +23,8 @@
 - **Accessibility**: WCAG 2.1, keyboard navigation, skip links, ARIA live regions, semantic HTML throughout.
 - **Error Handling**: Custom 404, 401, 403, 500 pages with system UI and automatic redirects for protected/admin routes.
 - **API-First**: Modular Next.js API routes, MongoDB/Mongoose integration-ready.
-- **Admin Panel**: Create, edit, and manage quizzes; view all quizzes, filter, and search.
+- **Admin Panel & Roles**: Clerk organization-based roles—admins (assigned via Clerk dashboard) can add, edit, and delete quizzes; all other users are members with quiz-taking access only.
+- **Quiz Types**: Supports both passage-based quizzes (multiple questions per passage) and normal quizzes (single questions).
 - **Dynamic Metadata**: All pages use Next.js metadata for SEO (title, description, OpenGraph, Twitter, robots, canonical).
 
 ---
@@ -175,7 +176,16 @@ src/
 
 ## 🚦 Getting Started
 
-### Quiz Start & Reset Behavior
+### Clerk Organization & Roles
+
+- Admins and members are managed via Clerk organizations. Only users set as "admin" in the Clerk dashboard have access to quiz management features (add, edit, delete quizzes).
+- All other users are members and can only take quizzes.
+- Admins can manage both passage-type and normal-type quizzes.
+
+### Quiz Types
+
+- **Passage Type**: A passage with multiple related questions grouped together.
+- **Normal Type**: Standard MCQ quizzes with individual questions.
 
 - Starting a quiz from "Available Quizzes" always clears previous progress and prompts for mode selection (Study or Exam).
 - This is achieved by appending `?new=1` to the quiz URL, which resets the quiz state and ensures a fresh attempt.
