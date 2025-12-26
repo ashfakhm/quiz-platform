@@ -20,6 +20,13 @@ const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 // Always wrap with ClerkProvider to ensure Clerk components work
 // ClerkProvider requires a publishableKey, so we must provide it
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Quiz Platform",
+  description: "A platform to create, manage, and attempt quizzes online.",
+};
+
 function ClerkWrapper({ children }: { children: React.ReactNode }) {
   if (!publishableKey) {
     console.error(
