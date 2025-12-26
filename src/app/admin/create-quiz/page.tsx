@@ -26,6 +26,8 @@ interface Question {
     format: "markdown" | "text";
     content: string;
   };
+  context?: string; // For passage text
+  groupId?: string; // To link grouped questions
 }
 
 function CreateQuizPageInner() {
@@ -46,18 +48,7 @@ function CreateQuizPageInner() {
   const [quizTitle, setQuizTitle] = useState("");
   const [quizDescription, setQuizDescription] = useState("");
   const [quizId, setQuizId] = useState("");
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: "q1",
-      question: "",
-      options: ["", "", "", ""],
-      correctIndex: 0,
-      explanation: {
-        format: "markdown",
-        content: "",
-      },
-    },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     if (isLoaded && orgLoaded && user) {
@@ -138,6 +129,44 @@ function CreateQuizPageInner() {
       },
     };
     setQuestions([...questions, newQuestion]);
+  };
+
+  const addPassageGroup = () => {
+    const groupId = `g-${Date.now()}`;
+    const newQuestion: Question = {
+      id: `q${questions.length + 1}`,
+      question: "",
+      options: ["", "", "", ""],
+      correctIndex: 0,
+      explanation: {
+        format: "markdown",
+        content: "",
+      },
+      context: "",
+      groupId,
+      // isGrouped property is implied by having a groupId
+    };
+    setQuestions([...questions, newQuestion]);
+  };
+
+  const addQuestionToGroup = (groupId: string, context: string) => {
+    const newQuestion: Question = {
+      id: `q${questions.length + 1}`,
+      question: "",
+      options: ["", "", "", ""],
+      correctIndex: 0,
+      explanation: {
+        format: "markdown",
+        content: "",
+      },
+      context,
+      groupId,
+    };
+    // Insert after the last question of this group
+    const lastGroupIndex = questions.findLastIndex(q => q.groupId === groupId);
+    const updated = [...questions];
+    updated.splice(lastGroupIndex + 1, 0, newQuestion);
+    setQuestions(updated);
   };
 
   const removeQuestion = (index: number) => {
@@ -232,6 +261,8 @@ function CreateQuizPageInner() {
             options: q.options.map((opt) => opt.trim()).filter((opt) => opt),
             correctIndex: q.correctIndex,
             explanation: q.explanation,
+            context: q.context,
+            groupId: q.groupId,
           })),
         }),
       });
@@ -350,26 +381,97 @@ function CreateQuizPageInner() {
                     <h3 className="text-lg font-semibold">Questions</h3>
                     <p className="text-sm text-muted-foreground">
                       {questions.length} question
-                      {questions.length !== 1 ? "s" : ""} added (unlimited
-                      allowed)
+                      {questions.length !== 1 ? "s" : ""} added
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    onClick={addQuestion}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Question
-                  </Button>
+                  <div className="flex gap-2">
+                     <Button
+                       type="button"
+                       onClick={addQuestion}
+                       variant="outline"
+                       size="sm"
+                     >
+                       <Plus className="w-4 h-4 mr-2" />
+                       Add Single Question
+                     </Button>
+                     <Button
+                       type="button"
+                       onClick={addPassageGroup}
+                       variant="outline"
+                       size="sm"
+                     >
+                       <Plus className="w-4 h-4 mr-2" />
+                       Add Passage Group
+                     </Button>
+                  </div>
                 </div>
 
-                {questions.map((question, qIndex) => (
-                  <Card key={qIndex} className="p-4">
+                {questions.map((question, qIndex) => {
+                  const isGroupStart = question.groupId && (!questions[qIndex - 1] || questions[qIndex - 1].groupId !== question.groupId);
+                  const isGrouped = !!question.groupId;
+                  
+                  return (
+                  <div key={qIndex} className={isGrouped ? "pl-4 border-l-4 border-primary/20" : ""}>
+                    {isGroupStart && (
+                       <div className="mb-4 space-y-2">
+                          <label className="text-sm font-medium block text-primary">
+                             Passage / Context <span className="text-destructive">*</span>
+                          </label>
+                          <textarea
+                             value={question.context}
+                             onChange={(e) => {
+                                // Update context for all questions in this group
+                                const updated = questions.map(q => 
+                                   q.groupId === question.groupId ? { ...q, context: e.target.value } : q
+                                );
+                                setQuestions(updated);
+                             }}
+                             placeholder="Enter the shared passage or context here..."
+                             rows={4}
+                             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground shadow-sm"
+                          />
+                       </div>
+                    )}
+                    
+                    <Card className="p-4 relative">
                     <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-medium">Question {qIndex + 1}</h4>
-                      {questions.length > 1 && (
+                      <h4 className="font-medium">
+                         {isGrouped 
+                            ? `Question ${qIndex + 1} (Part of Group)` 
+                            : `Question ${qIndex + 1}`}
+                      </h4>
+                      <div className="flex gap-2">
+                      {isGroupStart && (
+                         <Button
+                            type="button"
+                            onClick={() => addQuestionToGroup(question.groupId!, question.context || "")}
+                            variant="secondary"
+                            size="sm"
+                            className="text-xs"
+                         >
+                            <Plus className="w-3 h-3 mr-1" />
+                            Add to Group
+                         </Button>
+                      )}
+                      {!isGrouped && (
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const newGroupId = `g-${Date.now()}`;
+                            const updated = [...questions];
+                            updated[qIndex].groupId = newGroupId;
+                            updated[qIndex].context = "";
+                            setQuestions(updated);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          <Plus className="w-3 h-3 mr-1" />
+                          Add Passage
+                        </Button>
+                      )}
+                      
                         <Button
                           type="button"
                           onClick={() => removeQuestion(qIndex)}
@@ -378,7 +480,7 @@ function CreateQuizPageInner() {
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
-                      )}
+                      </div>
                     </div>
 
                     <div className="space-y-4">
@@ -454,7 +556,9 @@ function CreateQuizPageInner() {
                       </div>
                     </div>
                   </Card>
-                ))}
+                  </div>
+                );
+                })}
               </div>
 
               {error && (

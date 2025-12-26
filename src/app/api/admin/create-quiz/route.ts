@@ -178,6 +178,9 @@ export async function POST(request: NextRequest) {
           format: explanation.format === 'text' ? 'text' : 'markdown',
           content: String(explanation.content).slice(0, 5000),
         };
+        if (q.context) existingQuestion.context = q.context;
+        if (q.groupId) existingQuestion.groupId = q.groupId;
+        
         await existingQuestion.save();
         questionIdsToUpdate.push(sanitizedId);
       } else {
@@ -191,6 +194,8 @@ export async function POST(request: NextRequest) {
             format: explanation.format === 'text' ? 'text' : 'markdown',
             content: String(explanation.content).slice(0, 5000),
           },
+          context: q.context,
+          groupId: q.groupId,
         });
       }
     }

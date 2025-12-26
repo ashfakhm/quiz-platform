@@ -48,11 +48,11 @@ export async function GET(
     }
 
     // Fetch all questions for this quiz
-    const questions = await Question.find({
+    const questionsDocs = await Question.find({
       id: { $in: quiz.questionIds },
-    }).sort({ id: 1 });
+    });
 
-    if (questions.length === 0) {
+    if (questionsDocs.length === 0) {
       console.error(`No questions found for quiz: ${quizId}. Question IDs: ${quiz.questionIds.join(', ')}`);
       return NextResponse.json(
         { 
@@ -64,13 +64,20 @@ export async function GET(
       );
     }
 
+    // Sort questions based on the order in quiz.questionIds (Source of Truth)
+    const questions = questionsDocs.sort((a, b) => {
+      return quiz.questionIds.indexOf(a.id) - quiz.questionIds.indexOf(b.id);
+    });
+
     // Map to the expected format
     const formattedQuestions = questions.map((q) => ({
       id: q.id,
       question: q.question,
       options: q.options,
-      correctIndex: q.correctIndex,
-      explanation: q.explanation,
+      correctIndex: q.correctIndex, // Include for client-side scoring
+      explanation: q.explanation, // Include explanation
+      context: q.context,     // Include context for passage-based questions
+      groupId: q.groupId,     // Include groupId for grouping
     }));
 
     return NextResponse.json({

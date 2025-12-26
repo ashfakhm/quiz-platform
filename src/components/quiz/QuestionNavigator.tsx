@@ -13,6 +13,7 @@ interface QuestionNavigatorProps {
   onNavigate: (index: number) => void;
   className?: string;
   mode: "exam" | "study" | null;
+  labels?: string[];
 }
 
 export function QuestionNavigator({
@@ -22,6 +23,7 @@ export function QuestionNavigator({
   onNavigate,
   className,
   mode,
+  labels,
 }: QuestionNavigatorProps) {
   // Helper to check status
   const getStatus = (index: number) => {
@@ -72,7 +74,7 @@ export function QuestionNavigator({
               title={`Go to Question ${index + 1}`}
               aria-label={`Go to Question ${index + 1} (${status})`}
             >
-              {index + 1}
+              {labels ? labels[index] : index + 1}
             </motion.button>
           );
         })}

@@ -9,6 +9,8 @@ export interface IQuestion extends Document {
     format: 'markdown' | 'text';
     content: string;
   };
+  context?: string;
+  groupId?: string;
 }
 
 const QuestionSchema = new Schema<IQuestion>({
@@ -44,6 +46,14 @@ const QuestionSchema = new Schema<IQuestion>({
       type: String,
       required: true,
     },
+  },
+  context: {
+    type: String, // For passage/paragraph text
+    required: false,
+  },
+  groupId: {
+    type: String, // To group related questions
+    required: false,
   },
 });
 

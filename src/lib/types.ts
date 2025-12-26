@@ -6,10 +6,9 @@ export interface Question {
   question: string;
   options: [string, string, string, string];
   correctIndex: number;
-  explanation: {
-    format: 'markdown';
-    content: string;
-  };
+  explanation: { format: 'markdown' | 'text'; content: string };
+  context?: string;
+  groupId?: string;
 }
 
 // Quiz response from API
