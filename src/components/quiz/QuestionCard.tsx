@@ -79,6 +79,11 @@ export function QuestionCard({
         <p className="text-lg font-medium leading-relaxed text-foreground dark:text-white">
           {question.question}
         </p>
+        {question.mark && question.mark > 1 && (
+          <p className="text-sm text-muted-foreground mt-2 font-medium">
+            (This question has {question.mark} marks)
+          </p>
+        )}
 
         {/* Options */}
         <section className="space-y-2" aria-label="Options">

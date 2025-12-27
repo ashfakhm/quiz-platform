@@ -10,7 +10,8 @@ const mockQuestions: Question[] = [
     explanation: {
       format: 'markdown',
       content: 'Investments made in the NSC VIII issue enjoy tax benefits under section 80C of Income Tax Act, 1961. Accrued interest is taxable, but it is deemed to be reinvested and therefore the interest becomes eligible for Section 80C benefits.\n\nIn Kisan Vikas Patra - There is no tax incentive for the investment made and the interest earned is taxed on accrual basis.\n\nIn Post Office Time Deposit - The interest earned on these investments is added to the depositor\'s total annual income in the year of receipt and is liable to be taxed as per the tax rate of the investor.'
-    }
+    },
+    mark: 1
   },
   {
     id: 'q2',

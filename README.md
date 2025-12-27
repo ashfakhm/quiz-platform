@@ -22,6 +22,7 @@
 - **Performance**: Turbopack, edge caching, WebVitals analytics, dynamic SEO metadata, fast cold starts.
 - **Accessibility**: WCAG 2.1, keyboard navigation, skip links, ARIA live regions, semantic HTML throughout.
 - **Error Handling**: Custom 404, 401, 403, 500 pages with system UI and automatic redirects for protected/admin routes.
+- **Question Marks Display**: Visual indication of marks for high-value questions (exam/study mode) for transparent scoring.
 - **API-First**: Modular Next.js API routes, MongoDB/Mongoose integration-ready.
 - **Admin Panel & Roles**: Clerk organization-based roles—admins (assigned via Clerk dashboard) can add, edit, and delete quizzes; all other users are members with quiz-taking access only.
 - **Quiz Types**: Supports both passage-based quizzes (multiple questions per passage) and normal quizzes (single questions).
