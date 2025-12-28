@@ -4,7 +4,7 @@
 export interface Question {
   id: string;
   question: string;
-  options: [string, string, string, string];
+  options: string[];
   correctIndex: number;
   explanation: { format: "markdown" | "text"; content: string };
   context?: string;
@@ -47,6 +47,7 @@ export interface QuizState {
   startTime: Date | null;
   endTime: Date | null;
   isModeLocked: boolean;
+  originalQuestions: Question[];
 }
 
 // Attempt submission payload

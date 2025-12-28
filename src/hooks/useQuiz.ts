@@ -17,7 +17,69 @@ const initialState: QuizState = {
   startTime: null,
   endTime: null,
   isModeLocked: false,
+  originalQuestions: [],
 };
+
+// Helper to shuffle array (Fisher-Yates)
+function shuffleArray<T>(array: T[]): T[] {
+  const newArr = [...array];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+}
+
+// Helper to shuffle questions and options
+function getShuffledQuestions(questions: Question[]): Question[] {
+  // Group questions first to maintain passage integrity
+  const groups: { groupId: string | null; qs: Question[] }[] = [];
+  let currentGroup: { groupId: string | null; qs: Question[] } | null = null;
+
+  questions.forEach((q) => {
+    if (q.groupId) {
+      if (currentGroup && currentGroup.groupId === q.groupId) {
+        currentGroup.qs.push(q);
+      } else {
+        if (currentGroup) groups.push(currentGroup);
+        currentGroup = { groupId: q.groupId, qs: [q] };
+      }
+    } else {
+      if (currentGroup) {
+        groups.push(currentGroup);
+        currentGroup = null;
+      }
+      groups.push({ groupId: null, qs: [q] });
+    }
+  });
+  if (currentGroup) groups.push(currentGroup);
+
+  // Shuffle the groups
+  const shuffledGroups = shuffleArray(groups);
+
+  // Flatten and shuffle options for each question
+  const finalQuestions: Question[] = [];
+  shuffledGroups.forEach((group) => {
+    group.qs.forEach((q) => {
+      // Shuffle options using dynamic length
+      const indices = q.options.map((_, i) => i);
+      const shuffledIndices = shuffleArray(indices);
+
+      const newOptions = shuffledIndices.map((i) => q.options[i]);
+
+      // Find where correct answer moved to
+      const newCorrectIndex = shuffledIndices.indexOf(q.correctIndex);
+
+      finalQuestions.push({
+        ...q,
+        options: newOptions,
+        correctIndex: newCorrectIndex,
+      });
+    });
+  });
+
+  return finalQuestions;
+}
 
 // Helper function to generate localStorage key for quiz persistence
 function getPersistKey(quizId: string): string {
@@ -47,7 +109,14 @@ export function useQuiz() {
       }
       setState({
         ...initialState,
-        questions,
+        questions:
+          restored?.questions && restored.questions.length > 0
+            ? restored.questions
+            : questions,
+        originalQuestions:
+          restored?.originalQuestions && restored.originalQuestions.length > 0
+            ? restored.originalQuestions
+            : questions,
         phase:
           restored?.phase === "in-progress" ? "in-progress" : "selecting-mode",
         mode: restored?.mode ?? null,
@@ -66,9 +135,24 @@ export function useQuiz() {
   const selectMode = useCallback((mode: QuizMode) => {
     setState((prev) => {
       if (prev.isModeLocked) return prev;
+
+      // If Exam mode, shuffle questions and options
+      let questionsToUse =
+        prev.originalQuestions.length > 0
+          ? prev.originalQuestions
+          : prev.questions;
+
+      if (mode === "exam") {
+        questionsToUse = getShuffledQuestions(questionsToUse);
+      } else {
+        // Ensure Study mode uses original order
+        questionsToUse = [...questionsToUse];
+      }
+
       return {
         ...prev,
         mode,
+        questions: questionsToUse,
         phase: "in-progress",
         startTime: new Date(),
       };
@@ -200,7 +284,14 @@ export function useQuiz() {
   const resetQuiz = useCallback(() => {
     setState((prev) => ({
       ...initialState,
-      questions: prev.questions,
+      questions:
+        prev.originalQuestions.length > 0
+          ? prev.originalQuestions
+          : prev.questions,
+      originalQuestions:
+        prev.originalQuestions.length > 0
+          ? prev.originalQuestions
+          : prev.questions,
       phase: "selecting-mode",
     }));
     if (quizId) {
@@ -222,6 +313,8 @@ export function useQuiz() {
       const persist = {
         mode: state.mode,
         phase: state.phase,
+        questions: state.questions,
+        originalQuestions: state.originalQuestions,
         answers: Object.fromEntries(state.answers),
         startTime: state.startTime,
         endTime: state.endTime,
@@ -234,6 +327,8 @@ export function useQuiz() {
   }, [
     state.mode,
     state.phase,
+    state.questions,
+    state.originalQuestions,
     state.answers,
     state.isModeLocked,
     state.startTime,
@@ -338,18 +433,18 @@ export function useQuizValidation() {
       // Validate each question
       questions.forEach((q, index) => {
         // Check options count
-        if (!q.options || q.options.length !== 4) {
+        if (!q.options || q.options.length < 2) {
           errors.push(
-            `Question ${index + 1} (${q.id}): Must have exactly 4 options`
+            `Question ${index + 1} (${q.id}): Must have at least 2 options`
           );
         }
 
         // Check correctIndex
-        if (q.correctIndex < 0 || q.correctIndex > 3) {
+        if (q.correctIndex < 0 || q.correctIndex >= q.options.length) {
           errors.push(
-            `Question ${index + 1} (${q.id}): correctIndex must be 0-3, got ${
-              q.correctIndex
-            }`
+            `Question ${index + 1} (${q.id}): correctIndex must be 0-${
+              q.options.length - 1
+            }, got ${q.correctIndex}`
           );
         }
 
