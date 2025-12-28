@@ -67,6 +67,7 @@ export async function GET(
       quizId: quiz.quizId,
       title: quiz.title,
       description: quiz.description || "",
+      category: quiz.category || "General",
       questions: formattedQuestions,
     });
   } catch (error: any) {
@@ -286,6 +287,7 @@ export async function PUT(
     // Update quiz with sanitized data
     quiz.title = titleValidation.sanitized!;
     quiz.description = descValidation.sanitized || "";
+    quiz.category = body.category || "General";
     quiz.questionIds = allQuestionIds;
     await quiz.save();
 

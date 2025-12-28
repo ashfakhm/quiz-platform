@@ -237,6 +237,7 @@ export async function POST(request: NextRequest) {
       quizId: quizId.trim(),
       title: titleValidation.sanitized!,
       description: descValidation.sanitized || "",
+      category: body.category || "General",
       questionIds: allQuestionIds,
     });
 

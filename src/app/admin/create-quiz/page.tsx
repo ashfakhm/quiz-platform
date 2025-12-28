@@ -49,8 +49,26 @@ function CreateQuizPageInner() {
 
   const [quizTitle, setQuizTitle] = useState("");
   const [quizDescription, setQuizDescription] = useState("");
+  const [category, setCategory] = useState("General");
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [quizId, setQuizId] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
+
+  // Fetch existing categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (response.ok) {
+          const data = await response.json();
+          setExistingCategories(data.categories || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (isLoaded && orgLoaded && user) {
@@ -80,6 +98,7 @@ function CreateQuizPageInner() {
       setQuizId(data.quizId);
       setQuizTitle(data.title);
       setQuizDescription(data.description || "");
+      setCategory(data.category || "General");
       setQuestions(data.questions || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load quiz");
@@ -167,7 +186,9 @@ function CreateQuizPageInner() {
       groupId,
     };
     // Insert after the last question of this group
-    const lastGroupIndex = questions.findLastIndex(q => q.groupId === groupId);
+    const lastGroupIndex = questions.findLastIndex(
+      (q) => q.groupId === groupId
+    );
     const updated = [...questions];
     updated.splice(lastGroupIndex + 1, 0, newQuestion);
     setQuestions(updated);
@@ -259,13 +280,14 @@ function CreateQuizPageInner() {
           quizId: quizId.trim(),
           title: quizTitle.trim(),
           description: quizDescription.trim(),
+          category: category.trim() || "General",
           questions: questions.map((q) => ({
             id: q.id,
             question: q.question.trim(),
             options: q.options.map((opt) => opt.trim()).filter((opt) => opt),
             correctIndex: q.correctIndex,
             explanation: q.explanation,
-            mark: typeof q.mark === 'number' && !isNaN(q.mark) ? q.mark : 1,
+            mark: typeof q.mark === "number" && !isNaN(q.mark) ? q.mark : 1,
             context: q.context,
             groupId: q.groupId,
           })),
@@ -377,6 +399,29 @@ function CreateQuizPageInner() {
                     className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   />
                 </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Category <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    list="categories"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    placeholder="e.g., General, Math, Science"
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                    required
+                  />
+                  <datalist id="categories">
+                    {existingCategories.map((cat) => (
+                      <option key={cat} value={cat} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Select from existing categories or type a new one
+                  </p>
+                </div>
               </div>
 
               {/* Questions */}
@@ -390,202 +435,233 @@ function CreateQuizPageInner() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                     <Button
-                       type="button"
-                       onClick={addQuestion}
-                       variant="outline"
-                       size="sm"
-                     >
-                       <Plus className="w-4 h-4 mr-2" />
-                       Add Single Question
-                     </Button>
-                     <Button
-                       type="button"
-                       onClick={addPassageGroup}
-                       variant="outline"
-                       size="sm"
-                     >
-                       <Plus className="w-4 h-4 mr-2" />
-                       Add Passage Group
-                     </Button>
+                    <Button
+                      type="button"
+                      onClick={addQuestion}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Single Question
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={addPassageGroup}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Passage Group
+                    </Button>
                   </div>
                 </div>
 
                 {questions.map((question, qIndex) => {
-                  const isGroupStart = question.groupId && (!questions[qIndex - 1] || questions[qIndex - 1].groupId !== question.groupId);
+                  const isGroupStart =
+                    question.groupId &&
+                    (!questions[qIndex - 1] ||
+                      questions[qIndex - 1].groupId !== question.groupId);
                   const isGrouped = !!question.groupId;
-                  
+
                   return (
-                  <div key={qIndex} className={isGrouped ? "pl-4 border-l-4 border-primary/20" : ""}>
-                    {isGroupStart && (
-                       <div className="mb-4 space-y-2">
+                    <div
+                      key={qIndex}
+                      className={
+                        isGrouped ? "pl-4 border-l-4 border-primary/20" : ""
+                      }
+                    >
+                      {isGroupStart && (
+                        <div className="mb-4 space-y-2">
                           <label className="text-sm font-medium block text-primary">
-                             Passage / Context <span className="text-destructive">*</span>
+                            Passage / Context{" "}
+                            <span className="text-destructive">*</span>
                           </label>
                           <textarea
-                             value={question.context}
-                             onChange={(e) => {
-                                // Update context for all questions in this group
-                                const updated = questions.map(q => 
-                                   q.groupId === question.groupId ? { ...q, context: e.target.value } : q
-                                );
-                                setQuestions(updated);
-                             }}
-                             placeholder="Enter the shared passage or context here..."
-                             rows={4}
-                             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground shadow-sm"
+                            value={question.context}
+                            onChange={(e) => {
+                              // Update context for all questions in this group
+                              const updated = questions.map((q) =>
+                                q.groupId === question.groupId
+                                  ? { ...q, context: e.target.value }
+                                  : q
+                              );
+                              setQuestions(updated);
+                            }}
+                            placeholder="Enter the shared passage or context here..."
+                            rows={4}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground shadow-sm"
                           />
-                       </div>
-                    )}
-                    
-                    <Card className="p-4 relative">
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-medium">
-                         {isGrouped 
-                            ? `Question ${qIndex + 1} (Part of Group)` 
-                            : `Question ${qIndex + 1}`}
-                      </h4>
-                      <div className="flex gap-2">
-                      {isGroupStart && (
-                         <Button
-                            type="button"
-                            onClick={() => addQuestionToGroup(question.groupId!, question.context || "")}
-                            variant="secondary"
-                            size="sm"
-                            className="text-xs"
-                         >
-                            <Plus className="w-3 h-3 mr-1" />
-                            Add to Group
-                         </Button>
+                        </div>
                       )}
-                      {!isGrouped && (
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            const newGroupId = `g-${Date.now()}`;
-                            const updated = [...questions];
-                            updated[qIndex].groupId = newGroupId;
-                            updated[qIndex].context = "";
-                            setQuestions(updated);
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="text-xs"
-                        >
-                          <Plus className="w-3 h-3 mr-1" />
-                          Add Passage
-                        </Button>
-                      )}
-                      
-                        <Button
-                          type="button"
-                          onClick={() => removeQuestion(qIndex)}
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
 
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">
-                          Mark <span className="text-destructive">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={10}
-                          step={1}
-                          value={typeof question.mark === 'number' ? question.mark : 1}
-                          onChange={e => {
-                            let val = parseInt(e.target.value, 10);
-                            if (isNaN(val) || val < 1) val = 1;
-                            if (val > 10) val = 10;
-                            updateQuestion(qIndex, 'mark', val);
-                          }}
-                          className="w-24 px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                          required
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">Set the mark for this question (1-10, default 1)</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">
-                          Question Text{" "}
-                          <span className="text-destructive">*</span>
-                        </label>
-                        <textarea
-                          value={question.question}
-                          onChange={(e) =>
-                            updateQuestion(qIndex, "question", e.target.value)
-                          }
-                          placeholder="Enter your question here..."
-                          rows={2}
-                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                          required
-                        />
-                      </div>
+                      <Card className="p-4 relative">
+                        <div className="flex items-start justify-between mb-4">
+                          <h4 className="font-medium">
+                            {isGrouped
+                              ? `Question ${qIndex + 1} (Part of Group)`
+                              : `Question ${qIndex + 1}`}
+                          </h4>
+                          <div className="flex gap-2">
+                            {isGroupStart && (
+                              <Button
+                                type="button"
+                                onClick={() =>
+                                  addQuestionToGroup(
+                                    question.groupId!,
+                                    question.context || ""
+                                  )
+                                }
+                                variant="secondary"
+                                size="sm"
+                                className="text-xs"
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Add to Group
+                              </Button>
+                            )}
+                            {!isGrouped && (
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  const newGroupId = `g-${Date.now()}`;
+                                  const updated = [...questions];
+                                  updated[qIndex].groupId = newGroupId;
+                                  updated[qIndex].context = "";
+                                  setQuestions(updated);
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Add Passage
+                              </Button>
+                            )}
 
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">
-                          Options <span className="text-destructive">*</span>
-                        </label>
-                        {question.options.map((option, oIndex) => (
-                          <div
-                            key={oIndex}
-                            className="flex items-center gap-2 mb-2"
-                          >
+                            <Button
+                              type="button"
+                              onClick={() => removeQuestion(qIndex)}
+                              variant="ghost"
+                              size="sm"
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">
+                              Mark <span className="text-destructive">*</span>
+                            </label>
                             <input
-                              type="radio"
-                              name={`correct-${qIndex}`}
-                              checked={question.correctIndex === oIndex}
-                              onChange={() =>
-                                updateQuestion(qIndex, "correctIndex", oIndex)
+                              type="number"
+                              min={1}
+                              max={10}
+                              step={1}
+                              value={
+                                typeof question.mark === "number"
+                                  ? question.mark
+                                  : 1
                               }
-                              className="w-4 h-4"
+                              onChange={(e) => {
+                                let val = parseInt(e.target.value, 10);
+                                if (isNaN(val) || val < 1) val = 1;
+                                if (val > 10) val = 10;
+                                updateQuestion(qIndex, "mark", val);
+                              }}
+                              className="w-24 px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                              required
                             />
-                            <input
-                              type="text"
-                              value={option}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Set the mark for this question (1-10, default 1)
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">
+                              Question Text{" "}
+                              <span className="text-destructive">*</span>
+                            </label>
+                            <textarea
+                              value={question.question}
                               onChange={(e) =>
-                                updateOption(qIndex, oIndex, e.target.value)
+                                updateQuestion(
+                                  qIndex,
+                                  "question",
+                                  e.target.value
+                                )
                               }
-                              placeholder={`Option ${oIndex + 1}`}
-                              className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                              placeholder="Enter your question here..."
+                              rows={2}
+                              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                              required
                             />
                           </div>
-                        ))}
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Select the radio button next to the correct answer
-                        </p>
-                      </div>
 
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">
-                          Explanation{" "}
-                          <span className="text-destructive">*</span>
-                        </label>
-                        <textarea
-                          value={question.explanation.content}
-                          onChange={(e) =>
-                            updateQuestion(qIndex, "explanation", {
-                              ...question.explanation,
-                              content: e.target.value,
-                            })
-                          }
-                          placeholder="Explain why this answer is correct..."
-                          rows={3}
-                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                          required
-                        />
-                      </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">
+                              Options{" "}
+                              <span className="text-destructive">*</span>
+                            </label>
+                            {question.options.map((option, oIndex) => (
+                              <div
+                                key={oIndex}
+                                className="flex items-center gap-2 mb-2"
+                              >
+                                <input
+                                  type="radio"
+                                  name={`correct-${qIndex}`}
+                                  checked={question.correctIndex === oIndex}
+                                  onChange={() =>
+                                    updateQuestion(
+                                      qIndex,
+                                      "correctIndex",
+                                      oIndex
+                                    )
+                                  }
+                                  className="w-4 h-4"
+                                />
+                                <input
+                                  type="text"
+                                  value={option}
+                                  onChange={(e) =>
+                                    updateOption(qIndex, oIndex, e.target.value)
+                                  }
+                                  placeholder={`Option ${oIndex + 1}`}
+                                  className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                                />
+                              </div>
+                            ))}
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Select the radio button next to the correct answer
+                            </p>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">
+                              Explanation{" "}
+                              <span className="text-destructive">*</span>
+                            </label>
+                            <textarea
+                              value={question.explanation.content}
+                              onChange={(e) =>
+                                updateQuestion(qIndex, "explanation", {
+                                  ...question.explanation,
+                                  content: e.target.value,
+                                })
+                              }
+                              placeholder="Explain why this answer is correct..."
+                              rows={3}
+                              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </Card>
                     </div>
-                  </Card>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
 
               {error && (
                 <Alert variant="destructive">

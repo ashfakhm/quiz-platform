@@ -27,6 +27,7 @@ interface Quiz {
   quizId: string;
   title: string;
   description: string;
+  category: string;
   questionCount: number;
 }
 
@@ -36,6 +37,7 @@ export default function QuizzesPage() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     fetchQuizzes();
@@ -66,6 +68,18 @@ export default function QuizzesPage() {
     // If not signed in, the SignUpButton will handle authentication
     // After sign-up, user will be redirected and can click again
   };
+
+  // Extract unique categories
+  const categories = [
+    "All",
+    ...Array.from(new Set(quizzes.map((q) => q.category || "General"))).sort(),
+  ];
+
+  // Filter quizzes
+  const filteredQuizzes =
+    selectedCategory === "All"
+      ? quizzes
+      : quizzes.filter((q) => (q.category || "General") === selectedCategory);
 
   return (
     <main className="min-h-screen bg-background">
@@ -126,9 +140,26 @@ export default function QuizzesPage() {
           >
             Available Quizzes
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-6">
             Select a quiz to start learning
           </p>
+
+          {/* Category Tabs */}
+          {!loading && quizzes.length > 0 && (
+            <div className="flex flex-wrap gap-2 pb-2">
+              {categories.map((cat) => (
+                <Button
+                  key={cat}
+                  variant={selectedCategory === cat ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(cat)}
+                  className="rounded-full transition-all"
+                >
+                  {cat}
+                </Button>
+              ))}
+            </div>
+          )}
         </header>
 
         {/* Error Alert */}
@@ -158,10 +189,22 @@ export default function QuizzesPage() {
               </Link>
             </CardContent>
           </Card>
+        ) : filteredQuizzes.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              No quizzes found in this category.
+            </p>
+            <Button variant="link" onClick={() => setSelectedCategory("All")}>
+              View all quizzes
+            </Button>
+          </div>
         ) : (
           /* Quiz Grid */
-          <ul className="grid gap-6 grid-cols-1" aria-label="Quiz list">
-            {quizzes.map((quiz) => (
+          <ul
+            className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            aria-label="Quiz list"
+          >
+            {filteredQuizzes.map((quiz) => (
               <li key={quiz.quizId}>
                 <Card
                   className="hover:shadow-lg transition-all duration-300 group"

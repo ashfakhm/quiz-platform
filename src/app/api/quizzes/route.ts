@@ -11,13 +11,14 @@ export async function GET() {
     // Fetch all quizzes
     const quizzes = await Quiz.find({})
       .sort({ createdAt: -1 })
-      .select("quizId title description questionIds")
+      .select("quizId title description category questionIds")
       .lean();
 
     const formattedQuizzes = quizzes.map((quiz) => ({
       quizId: quiz.quizId,
       title: quiz.title,
       description: quiz.description || "",
+      category: quiz.category || "General",
       questionCount: quiz.questionIds.length,
     }));
 

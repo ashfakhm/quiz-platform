@@ -1,10 +1,11 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IQuiz extends Document {
   quizId: string;
   title: string;
   description?: string;
   questionIds: string[];
+  category: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,12 @@ const QuizSchema = new Schema<IQuiz>(
       type: [String],
       required: true,
     },
+    category: {
+      type: String,
+      required: true,
+      default: "General",
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -35,5 +42,5 @@ const QuizSchema = new Schema<IQuiz>(
 );
 
 // Prevent re-compilation during development
-export const Quiz = mongoose.models.Quiz || mongoose.model<IQuiz>('Quiz', QuizSchema);
-
+export const Quiz =
+  mongoose.models.Quiz || mongoose.model<IQuiz>("Quiz", QuizSchema);
