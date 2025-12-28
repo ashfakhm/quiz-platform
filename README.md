@@ -28,6 +28,9 @@
 - **Quiz Types**: Supports both passage-based quizzes (multiple questions per passage) and normal quizzes (single questions).
 - **Admin Split View**: Complex quiz creation made easy with a responsive split-view layout (navigation sidebar + editor), real-time validation, and optimistic updates.
 - **Focus Mode**: Distraction-free quiz interface with centered typography, sticky passage context, and mobile-optimized navigation drawer.
+- **Quiz Categories**: robust category system allowing admins to create/assign categories and users to filter quizzes by topic (Math, Science, etc.) via a responsive tabbed interface.
+- **Dynamic Question Options**: validation and rendering engine modified to support flexible option counts (2+), enabling True/False or multi-option formats.
+- **Secure Exam Shuffling**: Exam Mode utilizes Fisher-Yates algorithms to randomize both question order and option positions per attempt, preventing pattern recognition while preserving passage groups.
 - **Dynamic Metadata**: All pages use Next.js metadata for SEO (title, description, OpenGraph, Twitter, robots, canonical).
 
 ---
@@ -251,4 +254,4 @@ Distributed under the MIT License. See `LICENSE` for details.
 
 ---
 
-_Documentation maintained by the QuizMaster Pro Engineering Team. Last updated: 2025-12-27._
+_Documentation maintained by the QuizMaster Pro Engineering Team. Last updated: 2025-12-28._
