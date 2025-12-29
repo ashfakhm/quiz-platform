@@ -167,6 +167,27 @@ src/
 
 ---
 
+## 📊 Lighthouse Performance Metrics
+
+QuizMaster Pro achieves exceptional web performance and quality standards:
+
+![Lighthouse Scores](./lighthouse-seo-score.png)
+
+- **SEO**: 💯 **100/100** - Perfect search engine optimization
+- **Performance**: ⚡ **93/100** - Excellent load times and responsiveness
+- **Accessibility**: ♿ **91/100** - Strong WCAG compliance
+- **Best Practices**: ✅ **73/100** - Modern web standards
+
+These scores reflect our commitment to:
+
+- **Zero-FOUC theming** with system-aware dark/light mode
+- **Edge-first architecture** with Next.js 16 and Turbopack
+- **Semantic HTML** and ARIA live regions for accessibility
+- **Dynamic metadata** for optimal SEO across all pages
+- **WebVitals monitoring** for continuous performance optimization
+
+---
+
 ## 🛠️ Technology Stack
 
 - **[Next.js 16](https://nextjs.org/)** (App Router, Server Components, Edge Middleware)
